@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Programa CRE · Crepes &amp; Waffles</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--red:#C8102E;--red-dk:#9E0C24;--red-lt:#FDECED;--salmon:#E8705A;--salmon-lt:#FDF0EE;--cream:#FDF7F3;--cream2:#F4EDE7;--cream3:#E8D8D0;--brown:#3D2B0A;--brown2:#7A5820;--gold:#D4A843;--text:#1A1A1A;--text2:#555;--text3:#888;--white:#FFF}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}
+body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text);overflow-x:hidden}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:#f0ebe5}::-webkit-scrollbar-thumb{background:var(--cream3);border-radius:10px}
+/* NAV */
+#top-nav{position:fixed;top:0;left:0;right:0;z-index:500;background:linear-gradient(135deg,#1a0a02,#3D2B0A 60%,#5C3D12);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.nav-brand{font-family:'Playfair Display',serif;color:var(--gold);font-size:17px;font-weight:700;white-space:nowrap}
+.nav-brand span{color:#c8a060;font-size:11px;font-family:'Nunito',sans-serif;letter-spacing:2px;display:block;font-weight:600;text-transform:uppercase;margin-top:1px}
+.nav-tabs{display:flex;gap:4px}
+.nav-tab{padding:8px 20px;background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:6px;color:rgba(255,255,255,.65);font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
+.nav-tab:hover{background:rgba(255,255,255,.1);color:#fff}
+.nav-tab.active{background:var(--red);border-color:var(--red);color:#fff}
+/* SECTIONS */
+#bc-section,#arch-section{margin-top:58px;min-height:calc(100vh - 58px)}
+#arch-section{display:none}
+/* SIDEBAR */
+#bc-section{display:flex}
+#bc-sidebar{width:230px;flex-shrink:0;position:sticky;top:58px;height:calc(100vh - 58px);overflow-y:auto;background:var(--white);border-right:1px solid var(--cream3);padding:16px 0}
+.sidebar-label{font-size:10px;font-weight:800;letter-spacing:2px;color:var(--text3);text-transform:uppercase;padding:0 16px 8px;margin-top:8px}
+.sidebar-item{display:flex;align-items:center;gap:8px;padding:7px 16px;cursor:pointer;transition:all .15s;border-left:3px solid transparent;color:var(--text2);font-size:11.5px;font-weight:600;line-height:1.3}
+.sidebar-item:hover{background:var(--cream);color:var(--text)}
+.sidebar-item.active{border-left-color:var(--red);background:var(--red-lt);color:var(--red-dk);font-weight:800}
+.sidebar-num{font-size:10px;font-weight:800;color:var(--red);background:var(--red-lt);border-radius:4px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sidebar-item.active .sidebar-num{background:var(--red);color:#fff}
+/* BC CONTENT */
+#bc-content{flex:1;padding:32px 36px 80px;max-width:960px}
+.bc-slide{background:var(--white);border-radius:14px;margin-bottom:28px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06);scroll-margin-top:76px}
+.slide-header{padding:16px 24px;display:flex;align-items:center;gap:12px}
+.slide-header.red{background:linear-gradient(135deg,var(--red),#a50d25)}
+.slide-header.dark{background:linear-gradient(135deg,var(--brown),#1a1208)}
+.slide-header.salmon{background:linear-gradient(135deg,var(--salmon),#c05040)}
+.slide-header.amber{background:linear-gradient(135deg,#B5620A,#8a4808)}
+.slide-header.teal{background:linear-gradient(135deg,#2E7D6B,#1d5a4c)}
+.slide-header.indigo{background:linear-gradient(135deg,#3B4E9E,#2a3a80)}
+.slide-num-badge{background:rgba(255,255,255,.2);border-radius:6px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
+.slide-title-text{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#fff;line-height:1.3}
+.slide-subtitle{font-size:11px;color:rgba(255,255,255,.75);margin-top:2px;font-weight:600}
+.slide-body{padding:22px 24px}
+.hero-q{background:var(--red-lt);border-left:4px solid var(--red);border-radius:0 8px 8px 0;padding:14px 18px;font-family:'Playfair Display',serif;font-size:14.5px;color:var(--red-dk);line-height:1.6;font-style:italic;margin-bottom:18px}
+.mg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.mc{background:var(--cream);border-radius:8px;padding:12px;text-align:center}
+.mv{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--red)}
+.ml{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-top:3px}
+.sr{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.sb{background:var(--red-lt);border-radius:10px;padding:14px 10px;text-align:center}
+.sn{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--red);line-height:1}
+.sl{font-size:10px;font-weight:700;color:var(--red-dk);text-transform:uppercase;letter-spacing:.5px;margin-top:4px}
+.sb.brn{background:var(--cream2)}.sb.brn .sn{color:var(--brown)}.sb.brn .sl{color:var(--brown2)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.c{background:var(--cream);border-radius:10px;padding:14px 16px}
+.c.red{background:var(--red-lt);border-left:3px solid var(--red)}.c.sal{background:var(--salmon-lt);border-left:3px solid var(--salmon)}
+.c.grn{background:#ECFDF5;border-left:3px solid #2E8B6A}.c.blu{background:#EFF6FF;border-left:3px solid #2563A8}
+.c.amb{background:#FFFBEB;border-left:3px solid #C27A0A}.c.pur{background:#F5F3FF;border-left:3px solid #7C3CBF}
+.cl{font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px}
+.cl.red{color:var(--red)}.cl.sal{color:#c05040}.cl.grn{color:#1B6B4A}.cl.blu{color:#1E40AF}.cl.amb{color:#92400E}.cl.pur{color:#5B21B6}
+.ct{font-size:13px;font-weight:800;color:var(--text);margin-bottom:4px}
+.cx{font-size:12px;color:var(--text2);line-height:1.55}
+p{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:10px}p:last-child{margin-bottom:0}
+ul{list-style:none;display:flex;flex-direction:column;gap:5px}
+ul li{font-size:12px;color:var(--text2);padding-left:16px;position:relative;line-height:1.45}
+ul li::before{content:"◆";position:absolute;left:0;color:var(--red);font-size:8px;top:3px}
+.ni{display:flex;gap:12px;margin-bottom:12px}
+.nb{background:var(--red);color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;margin-top:1px}
+.ntl{font-size:13px;font-weight:800;color:var(--text)}.ntx{font-size:12px;color:var(--text2);margin-top:2px;line-height:1.4}
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+th{background:var(--red);color:#fff;padding:8px 10px;text-align:left;font-weight:700;font-size:10px;letter-spacing:.5px;text-transform:uppercase}
+td{padding:8px 10px;border-bottom:1px solid var(--cream2);color:var(--text2);vertical-align:top;line-height:1.45}
+tr:last-child td{border-bottom:none}tr:nth-child(even) td{background:var(--cream)}
+.tag{display:inline-block;font-size:10px;font-weight:700;border-radius:5px;padding:2px 8px}
+.tag.red{background:var(--red-lt);color:var(--red-dk)}.tag.grn{background:#D1FAE5;color:#065F46}
+.tag.sc{background:var(--red);color:#fff;font-size:13px;padding:3px 10px;border-radius:8px}
+.score-rec{background:#065F46;color:#fff;font-size:10px;font-weight:700;border-radius:4px;padding:2px 8px;margin-left:6px}
+.alt{display:flex;align-items:flex-start;gap:12px;padding:10px 12px;border-radius:8px;background:var(--cream);margin-bottom:6px}
+.alt.rec{background:var(--red-lt);border:1.5px solid var(--red)}
+.altc{background:var(--red-lt);color:var(--red-dk);border-radius:6px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex-shrink:0;margin-top:1px}
+.pc{background:var(--cream);border-radius:10px;padding:14px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start}
+.pb{background:var(--red);color:#fff;border-radius:8px;padding:6px 10px;text-align:center;flex-shrink:0;min-width:52px}
+.pi{font-family:'Playfair Display',serif;font-size:17px;font-weight:700}.pr{font-size:9px;font-weight:700;opacity:.85}
+.pn{font-size:12px;font-weight:800;color:var(--text);margin-bottom:4px}
+.gl{display:flex;align-items:center;gap:6px;margin-top:8px;padding:6px 10px;background:var(--red-lt);border-radius:6px;font-size:11px;font-weight:700;color:var(--red-dk)}
+.feas{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.ri{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border-radius:8px;background:var(--cream);margin-bottom:6px}
+.ri-t{font-size:12px;font-weight:700;color:var(--text)}.ri-m{color:#2E8B6A;font-size:12px;margin-top:2px}
+.rec-i{display:flex;gap:14px;padding:14px;border-radius:10px;background:var(--cream);margin-bottom:10px;align-items:flex-start}
+.rec-n{background:var(--red);color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:16px;font-weight:700;flex-shrink:0}
+.cb{background:linear-gradient(135deg,var(--red),#9E0C24);border-radius:12px;padding:18px 22px;text-align:center;font-family:'Playfair Display',serif;font-size:14px;color:#fff;font-style:italic;line-height:1.6;margin-top:20px}
+.sd{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--cream3);padding-bottom:8px;margin-bottom:14px}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.pitem{font-size:11px;padding:5px 8px;background:var(--cream);border-radius:5px;color:var(--text2);font-weight:600}
+.ilist{display:flex;flex-direction:column;gap:5px}
+.iitem{font-size:11.5px;padding:5px 10px;background:#EFF6FF;border-radius:5px;color:#1E40AF;font-weight:600}
+.igrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.icat{background:var(--cream);border-radius:10px;padding:12px 14px;border-top:3px solid var(--red)}
+.icat-t{font-size:12px;font-weight:800;color:var(--red-dk);margin-bottom:6px}
+.tagrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+/* ─── ARCH ─── */
+#arch-section{background:#F7F4EF;font-family:'Nunito',sans-serif}
+.arch-header{background:linear-gradient(135deg,#3D2B0A,#5C3D12 60%,#7A5020);padding:18px 28px}
+.arch-header h1{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#FDF6E8;margin-top:3px}
+.arch-header p{font-size:12px;color:#C9A96E;margin-top:2px;margin-bottom:0}
+.arch-pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.arch-pill{border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700}
+.arch-tabs{background:#fff;border-bottom:1px solid #E8E0D0;padding:0 28px;display:flex}
+.arch-tab{padding:14px 18px;background:none;border:none;border-bottom:3px solid transparent;font-size:13px;font-weight:600;color:#7A6A50;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .15s}
+.arch-tab:hover{color:#3D2B0A}
+.arch-tab.on{border-bottom-color:#B5620A;color:#B5620A;font-weight:800}
+.arch-body{max-width:1380px;margin:0 auto;padding:22px 28px 50px}
+/* Matrix */
+.matrix-controls{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.matrix-hint{font-size:12px;color:#9A8A70}
+.filter-row{display:flex;gap:6px;align-items:center}
+.filter-btn{padding:4px 10px;border-radius:12px;border:1px solid #D4C9B4;font-size:11px;font-weight:600;cursor:pointer;background:#fff;color:#7A6A50;font-family:'Nunito',sans-serif;transition:all .15s}
+.filter-btn.on{background:#3D2B0A;color:#FDF6E8;border-color:#3D2B0A}
+.matrix-wrap{overflow-x:auto}
+.matrix-grid{min-width:860px}
+.phase-header-row{display:grid;grid-template-columns:188px repeat(5,1fr);gap:4px;margin-bottom:4px}
+.phase-hdr{border-radius:8px 8px 0 0;padding:10px;text-align:center;border-bottom:3px solid #B5620A}
+.phase-hdr-id{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:#3D2B0A}
+.phase-hdr-name{font-size:10px;color:#7A5820;font-weight:600;margin-top:2px;line-height:1.3}
+.proj-row{display:grid;grid-template-columns:188px repeat(5,1fr);gap:4px;margin-bottom:4px}
+.proj-label{background:#fff;border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.proj-id{font-size:12px;font-weight:800}
+.proj-name{font-size:11px;font-weight:600;color:#3D2B0A;margin-top:2px;line-height:1.35}
+.proj-lead{font-size:10px;color:#9A8A70;margin-top:4px}
+.matrix-cell{border-radius:8px;padding:9px;min-height:86px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 1px 3px rgba(0,0,0,.05);cursor:pointer;transition:all .18s}
+.matrix-cell:hover{box-shadow:0 4px 16px rgba(0,0,0,.12);transform:translateY(-1px)}
+.cell-objective{font-size:10px;color:#3D2B0A;line-height:1.4;font-weight:600}
+.cell-foot{display:flex;justify-content:space-between;align-items:flex-end;margin-top:6px}
+.cell-count{font-size:9px;color:#7A6A50}
+.status-badge{font-size:9px;padding:2px 6px;border-radius:6px;font-weight:700}
+.matrix-cell.dimmed{opacity:.35;pointer-events:none}
+.gates-row{display:grid;grid-template-columns:188px repeat(5,1fr);gap:4px;margin-top:8px}
+.gates-label{display:flex;align-items:center;padding:0 12px;font-size:11px;font-weight:700;color:#7A6A50}
+.gate-btn{background:#FDF6E8;border:2px solid #B5620A;border-radius:50%;width:46px;height:46px;color:#B5620A;font-weight:800;font-size:12px;cursor:pointer;font-family:'Playfair Display',serif;box-shadow:0 2px 8px rgba(181,98,10,.2);transition:all .18s;display:flex;align-items:center;justify-content:center;margin:4px auto}
+.gate-btn:hover{background:#B5620A;color:#fff;transform:scale(1.08)}
+.matrix-legend{margin-top:20px;display:flex;gap:20px;flex-wrap:wrap;padding:14px 16px;background:#fff;border-radius:10px}
+.legend-item{display:flex;align-items:center;gap:7px;font-size:11px;color:#5A4A30;font-weight:600}
+.legend-dot{width:13px;height:13px;border-radius:3px;flex-shrink:0}
+/* Transversal */
+.trans-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:16px}
+.trans-card{background:#fff;border-radius:12px;padding:18px 20px;box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.trans-id{font-family:'Playfair Display',serif;font-size:13px;font-weight:700;letter-spacing:1px}
+.trans-name{font-size:15px;font-weight:800;color:#2C2416;margin-top:2px}
+.trans-purpose{font-size:12px;color:#5A4A30;line-height:1.55;margin:10px 0}
+.chip-group{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.chip{font-size:10px;padding:2px 8px;border-radius:6px}
+.chip.neutral{background:#F0EDE7;color:#5A4A30}
+.trans-footer{border-top:1px solid #EDE8DF;padding-top:10px;display:flex;justify-content:space-between;font-size:10px;flex-wrap:wrap;gap:4px}
+/* Benefits */
+.ben-list{display:flex;flex-direction:column;gap:14px}
+.ben-card{background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 2px 8px rgba(0,0,0,.07);display:grid;grid-template-columns:220px 1fr 1fr;gap:20px;align-items:start;transition:all .2s}
+.ben-card:hover{box-shadow:0 6px 20px rgba(0,0,0,.1);transform:translateY(-2px)}
+.ben-num{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.ben-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#2C2416;line-height:1.35}
+.ben-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.ben-tag{font-size:10px;background:#F0EDE7;color:#7A6A50;padding:2px 8px;border-radius:6px;font-weight:700}
+.kpi-label{font-size:10px;font-weight:700;color:#9A8A70;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.kpi-val{font-size:12px;color:#3D2B0A;line-height:1.55;font-weight:600;padding-left:10px;margin-bottom:10px}
+.del-chips{display:flex;gap:5px;flex-wrap:wrap}
+.del-chip{font-size:10px;background:#F7F4EF;border:1px solid #E0DAD0;color:#5A4A30;padding:2px 8px;border-radius:6px}
+.signal-box{font-size:13px;color:#3D2B0A;line-height:1.55;padding:10px 12px;border-radius:8px;font-style:italic}
+.chain-box{margin-top:28px;background:#fff;border-radius:12px;padding:20px 24px}
+.chain-title{font-size:13px;font-weight:800;color:#3D2B0A;margin-bottom:12px}
+.chain-steps{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.chain-step{font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px}
+.chain-arrow{color:#C9B990;font-weight:700}
+/* Modal */
+#modal-overlay{display:none;position:fixed;inset:0;background:rgba(44,36,22,.6);z-index:1000;align-items:center;justify-content:center;padding:20px}
+#modal-overlay.open{display:flex}
+#modal-box{background:#fff;border-radius:16px;padding:26px 28px;max-width:560px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+.modal-phase-proj{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px}
+.modal-proj-name{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#2C2416}
+.modal-phase-name{font-size:11px;color:#9A8A70;margin-top:1px}
+.modal-close{background:#F0EDE7;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:14px;color:#7A6A50;display:flex;align-items:center;justify-content:center}
+.modal-obj{border-radius:8px;padding:12px 14px;margin-bottom:14px}
+.modal-obj-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.modal-obj-text{font-size:13px;font-weight:600;color:#3D2B0A}
+.del-section-label{font-size:10px;font-weight:700;color:#9A8A70;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.del-list{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.del-item{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:#3D2B0A}
+.del-dot{font-size:12px;margin-top:1px;flex-shrink:0}
+.meta-grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.meta-box{border-radius:8px;padding:10px 12px}
+.meta-box-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
+.meta-box-val{font-size:11px;font-weight:600;line-height:1.4;color:#2C2416}
+.modal-gate-ref{margin-top:12px;font-size:11px;color:#9A8A70}
+@media(max-width:900px){#bc-sidebar{display:none}#bc-content{padding:20px 18px 60px}.mg,.sr,.g2,.g3,.feas{grid-template-columns:1fr 1fr}.igrid{grid-template-columns:1fr}.ben-card{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<nav id="top-nav">
+  <div class="nav-brand">Programa CRE<span>Crepes &amp; Waffles · Escalabilidad Organizacional</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" id="tab-bc" onclick="showSection('bc')">📋 Business Case</button>
+    <button class="nav-tab" id="tab-arch" onclick="showSection('arch')">🗺 Arquitectura del Programa</button>
+  </div>
+</nav>
+
+<!-- BC SECTION -->
+<div id="bc-section">
+
+<div id="bc-sidebar">
+  <div class="sidebar-label">Contenido</div>
+  <div class="sidebar-item active" onclick="scrollToSlide(1)" id="nav-1"><span class="sidebar-num">1</span>Portada y pregunta rectora</div>
+  <div class="sidebar-item" onclick="scrollToSlide(2)" id="nav-2"><span class="sidebar-num">2</span>ADN estratégico</div>
+  <div class="sidebar-item" onclick="scrollToSlide(3)" id="nav-3"><span class="sidebar-num">3</span>Trayectoria y tensión</div>
+  <div class="sidebar-item" onclick="scrollToSlide(4)" id="nav-4"><span class="sidebar-num">4</span>Mandato del programa</div>
+  <div class="sidebar-item" onclick="scrollToSlide(5)" id="nav-5"><span class="sidebar-num">5</span>Caso de negocio</div>
+  <div class="sidebar-item" onclick="scrollToSlide(6)" id="nav-6"><span class="sidebar-num">6</span>¿Por qué un programa?</div>
+  <div class="sidebar-label">Stakeholders</div>
+  <div class="sidebar-item" onclick="scrollToSlide(7)" id="nav-7"><span class="sidebar-num">7</span>Stakeholders críticos</div>
+  <div class="sidebar-item" onclick="scrollToSlide(8)" id="nav-8"><span class="sidebar-num">8</span>Rol por fase</div>
+  <div class="sidebar-label">Diagnóstico</div>
+  <div class="sidebar-item" onclick="scrollToSlide(9)" id="nav-9"><span class="sidebar-num">9</span>Plan de elicitation</div>
+  <div class="sidebar-item" onclick="scrollToSlide(10)" id="nav-10"><span class="sidebar-num">10</span>Escenario E4</div>
+  <div class="sidebar-item" onclick="scrollToSlide(11)" id="nav-11"><span class="sidebar-num">11</span>Ishikawa ajustado</div>
+  <div class="sidebar-item" onclick="scrollToSlide(12)" id="nav-12"><span class="sidebar-num">12</span>Pareto ajustado</div>
+  <div class="sidebar-item" onclick="scrollToSlide(13)" id="nav-13"><span class="sidebar-num">13</span>Brechas de capacidad</div>
+  <div class="sidebar-label">Diseño</div>
+  <div class="sidebar-item" onclick="scrollToSlide(14)" id="nav-14"><span class="sidebar-num">14</span>Evaluación de alternativas</div>
+  <div class="sidebar-item" onclick="scrollToSlide(15)" id="nav-15"><span class="sidebar-num">15</span>Línea base</div>
+  <div class="sidebar-item" onclick="scrollToSlide(16)" id="nav-16"><span class="sidebar-num">16</span>Alcance y PWBS</div>
+  <div class="sidebar-item" onclick="scrollToSlide(17)" id="nav-17"><span class="sidebar-num">17</span>Equipo y RACI</div>
+  <div class="sidebar-item" onclick="scrollToSlide(18)" id="nav-18"><span class="sidebar-num">18</span>Roadmap y gates</div>
+  <div class="sidebar-label">Beneficios</div>
+  <div class="sidebar-item" onclick="scrollToSlide(19)" id="nav-19"><span class="sidebar-num">19</span>Beneficios y KPIs</div>
+  <div class="sidebar-item" onclick="scrollToSlide(20)" id="nav-20"><span class="sidebar-num">20</span>Gestión de beneficios</div>
+  <div class="sidebar-label">Decisión</div>
+  <div class="sidebar-item" onclick="scrollToSlide(21)" id="nav-21"><span class="sidebar-num">21</span>Factibilidad y riesgos</div>
+  <div class="sidebar-item" onclick="scrollToSlide(22)" id="nav-22"><span class="sidebar-num">22</span>Recomendación final</div>
+</div>
+
+<div id="bc-content">
+
+    <div class="bc-slide" id="slide-1">
+      <div class="slide-header dark"><div class="slide-num-badge">1</div><div><div class="slide-title-text">Business Case · Escalabilidad Organizacional con Preservación Cultural</div><div class="slide-subtitle">Crepes &amp; Waffles</div></div></div>
+      <div class="slide-body">
+        <div class="hero-q">¿Cómo escalar la operación en Latinoamérica sin aumentar la variabilidad operativa ni diluir la experiencia y la cultura que sostienen la marca?</div>
+        <div class="mg"><div class="mc"><div class="mv">Presidencia</div><div class="ml">Sponsor</div></div><div class="mc"><div class="mv">COP 90 MM</div><div class="ml">Presupuesto</div></div><div class="mc"><div class="mv">8 meses</div><div class="ml">Horizonte</div></div><div class="mc"><div class="mv">Moderado</div><div class="ml">Riesgo</div></div></div>
+        <p style="margin-top:14px">Construir la capacidad organizacional mínima para crecer con mayor consistencia, sin deteriorar la propuesta de valor que ha hecho exitosa a la marca.</p>
+      </div>
+    </div>
+
+    <div class="bc-slide" id="slide-2">
+      <div class="slide-header red"><div class="slide-num-badge">2</div><div><div class="slide-title-text">El valor que el programa debe proteger</div><div class="slide-subtitle">ADN estratégico de Crepes &amp; Waffles</div></div></div>
+      <div class="slide-body">
+        <p>Crepes &amp; Waffles no compite solo por producto. Su valor se sostiene en una combinación difícil de replicar: alta calidad gastronómica, diseño, creatividad, precios accesibles, entorno cálido, abastecimiento responsable e impacto social.</p>
+        <div class="g2" style="margin-top:14px"><div class="c red"><div class="cl red">Misión</div><div class="cx">Transformar el alimento en arte, ofreciendo experiencias gastronómicas de alta calidad, accesibles y socialmente responsables, generando bienestar para colaboradores, proveedores y comunidades.</div></div><div class="c sal"><div class="cl sal">Visión</div><div class="cx">Consolidarse como marca gastronómica referente en América Latina, reconocida por su impacto social, modelo sostenible y excelencia en la experiencia del cliente.</div></div></div>
+        <p style="margin-top:14px;font-style:italic;color:var(--red-dk)">El programa existe para proteger una forma específica de crear valor mientras la organización gana escala.</p>
+      </div>
+    </div>
+
+    <div class="bc-slide" id="slide-3">
+      <div class="slide-header salmon"><div class="slide-num-badge">3</div><div><div class="slide-title-text">Trayectoria de expansión y tensión estratégica</div></div></div>
+      <div class="slide-body">
+        <p>Crepes &amp; Waffles cuenta con evidencia de escala real. Sin embargo, replicar el modelo en otros contextos no siempre ha sido simple, rápido ni homogéneo.</p>
+        <div class="sr"><div class="sb"><div class="sn">45</div><div class="sl">Años en el mercado</div></div><div class="sb"><div class="sn">+180</div><div class="sl">Sedes en Colombia</div></div><div class="sb"><div class="sn">6</div><div class="sl">Países con presencia</div></div><div class="sb"><div class="sn">9.300</div><div class="sl">Colaboradores</div></div></div>
+        <div class="sd">Hitos que explican la tensión estratégica</div>
+        <ul><li>Expansión internacional exitosa en algunos mercados, pero con aprendizaje gradual.</li><li>Salidas de Perú y Brasil, asociadas a dificultades para sostener filosofía y disciplina operativa.</li><li>En España tomó 20 años pasar de 1 a 4 sedes en Madrid.</li><li>Durante COVID-19, la respuesta dependió más de centralización que de un modelo replicable instalado.</li></ul>
+        <div class="sr" style="margin-top:14px;grid-template-columns:1fr 1fr"><div class="sb brn"><div class="sn">COP 789.3B</div><div class="sl">Facturación 2024</div></div><div class="sb brn"><div class="sn">COP 49.3B</div><div class="sl">Utilidades 2024</div></div></div>
+      </div>
+    </div>
+
+    <div class="bc-slide" id="slide-4">
+      <div class="slide-header red"><div class="slide-num-badge">4</div><div><div class="slide-title-text">Mandato del programa</div><div class="slide-subtitle">Qué se aprueba realmente</div></div></div>
+      <div class="slide-body">
+        <p>El mandato no aprueba una transformación total. Aprueba la maduración del business case, el levantamiento de línea base y el diseño/ejecución de un piloto para decidir con evidencia si la solución debe o no escalarse.</p>
+        <div class="g2" style="margin-top:14px">
+          <div><div class="sd">Ficha de mandato</div><table><tr><td style="font-weight:700;width:130px">Sponsor</td><td>Presidencia</td></tr><tr><td style="font-weight:700">Categoría</td><td>Crecimiento (CRE)</td></tr><tr><td style="font-weight:700">Objetivo</td><td>Escalar mediante modelo replicable que preserve coherencia operativa, experiencia e identidad cultural</td></tr><tr><td style="font-weight:700">Presupuesto</td><td>COP 90 MM</td></tr><tr><td style="font-weight:700">Horizonte</td><td>8 meses</td></tr><tr><td style="font-weight:700">Riesgo</td><td>Moderado</td></tr></table></div>
+          <div><div class="sd">Metas preliminares</div><div class="c red" style="margin-bottom:8px"><div class="cl red">Estándares críticos</div><div class="mv">≥ 90%</div><div class="cx">Cumplimiento en primera auditoría de apertura</div></div><div class="c red" style="margin-bottom:8px"><div class="cl red">Retrabajos e incidencias</div><div class="mv">−20%</div></div><div class="c red"><div class="cl red">Tiempo de habilitación</div><div class="mv">−25%</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bc-slide" id="slide-5">
+      <div class="slide-header red"><div class="slide-num-badge">5</div><div><div class="slide-title-text">Caso de negocio</div><div class="slide-subtitle">Contexto · Problema · Efecto · Impacto</div></div></div>
+      <div class="slide-body">
+        <div class="g2" style="margin-bottom:12px"><div class="c blu"><div class="cl blu">Contexto</div><div class="cx">La expansión acelerada en puntos, formatos y presencia internacional incrementa la complejidad para abrir, operar y consolidar nuevas sedes.</div></div><div class="c red"><div class="cl red">Problema</div><div class="cx">El crecimiento ya superó la capacidad organizacional de coordinarlo con suficiente consistencia en operación, cultura y gobernanza.</div></div><div class="c amb"><div class="cl amb">Efecto</div><div class="cx">Aumentan retrabajos, desalineaciones operativas e inconsistencias en la experiencia del cliente. Crece el riesgo de dilución cultural.</div></div><div class="c sal"><div class="cl sal">Impacto</div><div class="cx">Se tensionan la rentabilidad, el posicionamiento y la replicabilidad del modelo social y de servicio.</div></div></div>
+        <div class="c grn"><div class="cl grn">Blindaje del problema</div><div class="cx">La formulación se apoya en antecedentes de expansión fallida, lentitud de replicación en otros contextos y dependencia histórica de centralización para responder a crisis. En Fase 1 se levantará la línea base que cuantifique la magnitud actual.</div></div>
+      </div>
+    </div>
+
+    <div class="bc-slide" id="slide-6">
+      <div class="slide-header amber"><div class="slide-num-badge">6</div><div><div class="slide-title-text">¿Por qué esto es un programa y no un proyecto aislado?</div></div></div>
+      <div class="slide-body">
+        <p>La brecha no se explica por una sola causa ni se corrige con una única solución. La expansión tensiona estándares, decisiones, información, apropiación cultural y aprendizaje organizacional al mismo tiempo.</p>
+        <div style="margin-top:14px">
+          <div class="ni"><span class="nb">1</span><div><div class="ntl">Diagnóstico operacional</div><div class="ntx">Levantamiento de la realidad actual: flujos, retrabajos, fricciones y brechas.</div></div></div>
+          <div class="ni"><span class="nb">2</span><div><div class="ntl">Estandarización mínima viable</div><div class="ntx">Marco replicable de qué debe cumplirse y cómo, sin rigidizar el modelo.</div></div></div>
+          <div class="ni"><span class="nb">3</span><div><div class="ntl">Gobernanza y criterios de decisión</div><div class="ntx">Roles, autonomías, gates y rutas formales de escalamiento.</div></div></div>
+          <div class="ni"><span class="nb">4</span><div><div class="ntl">Cultura y apropiación</div><div class="ntx">Formación, onboarding y transferencia estructurada del ADN C&amp;W.</div></div></div>
+          <div class="ni"><span class="nb">5</span><div><div class="ntl">Piloto y aprendizaje antes de escalar</div><div class="ntx">Validar con evidencia antes de replicar el modelo.</div></div></div>
+        </div>
+        <p style="font-style:italic;color:var(--red-dk)">La solución correcta es un programa escalonado porque el valor esperado solo emerge cuando estas capacidades evolucionan de forma coordinada.</p>
+      </div>
+    </div>
+
+    <div class="bc-slide" id="slide-7">
+      <div class="slide-header teal"><div class="slide-num-badge">7</div><div><div class="slide-title-text">Stakeholders críticos del programa</div><div class="slide-subtitle">Red de actores: definición estratégica · diseño · pilotaje · medición</div></div></div>
+      <div class="slide-body">
+        <div class="sd">Gobierno y decisión</div>
+        <div class="g3" style="margin-bottom:14px"><div class="c"><div class="ct">Presidencia</div><div class="cx">Sponsor del programa. Aprueba gates, prioriza recursos y decide si el piloto justifica escalar.</div></div><div class="c"><div class="ct">VP Operaciones</div><div class="cx">Actor más crítico. Dueño natural del problema y del producto operativo. Participa en todo el ciclo.</div></div><div class="c"><div class="ct">VP Estrategia</div><div class="cx">Asegura que el programa no derive en una mejora operativa desconectada del crecimiento.</div></div><div class="c"><div class="ct">VP Talento</div><div class="cx">Clave para apropiación, liderazgo local, sostenibilidad cultural y absorción del cambio.</div></div></div>
+        <div class="sd">Diseño y validación</div>
+        <div class="g3"><div class="c"><div class="ct">Líder Calidad / SGI</div><div class="cx">Fuente de evidencia documental. Actor crítico para estándares, auditorías y checklists.</div></div><div class="c"><div class="ct">Líder Formación</div><div class="cx">Fundamental para traducir el modelo a capacidades adoptables.</div></div><div class="c"><div class="ct">Coordinación del programa</div><div class="cx">Integra frentes, asegura trazabilidad y da seguimiento al programa.</div></div><div class="c"><div class="ct">Consultor externo</div><div class="cx">Soporte técnico-metodológico. Responsable del ordenamiento y estructuración del caso.</div></div></div>
+      </div>
+    </div>
+
+    <div class="bc-slide" id="slide-8">
+      <div class="slide-header teal"><div class="slide-num-badge">8</div><div><div class="slide-title-text">Rol e involucramiento por fase</div><div class="slide-subtitle">Implementación, absorción y estrategia de involucramiento</div></div></div>
+      <div class="slide-body">
+        <div class="sd">Implementación y absorción</div>
+        <div class="g3" style="margin-bottom:14px"><div class="c"><div class="ct">Directores de sede</div><div class="cx">Usuarios críticos y validadores operativos. Centrales para el piloto.</div></div><div class="c"><div class="ct">Expansión / Habilitación</div><div class="cx">Actor clave para puesta en marcha física de nuevas sedes.</div></div><div class="c"><div class="ct">Tecnología / BI</div><div class="cx">Habilita trazabilidad, alertas y tablero mínimo de beneficios.</div></div><div class="c"><div class="ct">Finanzas / Control</div><div class="cx">Traduce fricción operativa a lectura económica y de sostenibilidad.</div></div><div class="c"><div class="ct">Compras / Abastecimiento</div><div class="cx">Condiciona consistencia de insumos y tiempos de apertura.</div></div></div>
+        <div class="sd">Estrategia de involucramiento</div>
+        <div class="g2"><div class="c red"><div class="cl red">Gestionar de cerca</div><div class="cx">Presidencia · VP Operaciones · VP Estrategia · VP Talento</div></div><div class="c amb"><div class="cl amb">Involucrar activamente</div><div class="cx">Calidad/SGI · Formación · Coord. programa · Directores de sede · Expansión/Habilitación</div></div><div class="c blu"><div class="cl blu">Consultar estructuradamente</div><div class="cx">Tecnología/BI · Finanzas/Control · Compras/Abastecimiento · Consultor externo</div></div><div class="c grn"><div class="cl grn">Monitorear</div><div class="cx">Clientes · Proveedores críticos</div></div></div>
+      </div>
+    </div>
+
+    <div class="bc-slide" id="slide-9">
+      <div class="slide-header indigo"><div class="slide-num-badge">9</div><div><div class="slide-title-text">Plan de elicitation ajustado al programa</div><div class="slide-subtitle">Arquitectura de levantamiento · E1–E4</div></div></div>
+      <div class="slide-body">
+        <p>El levantamiento produce insumos concretos que alimentan el diagnóstico, el Ishikawa, el Pareto, las brechas de capacidad y el diseño del programa.</p>
+        <table style="margin-top:12px"><thead><tr><th>ID</th><th>Qué se levanta</th><th>Instrumento</th><th>A quién</th><th>Salida</th></tr></thead><tbody>
+          <tr><td style="font-weight:800;color:var(--red)">E1</td><td>Flujo real de expansión, hitos críticos, tiempos, retrabajos</td><td>Entrevista estructurada + mapa AS-IS</td><td>VP Operaciones</td><td>Flujo actual, KPIs preliminares, puntos de fricción</td></tr>
+          <tr><td style="font-weight:800;color:var(--red)">E2</td><td>Estándares vigentes, documentación y brechas SGI vs operación</td><td>Revisión documental + ficha SGI vs operación</td><td>Líder Calidad / SGI</td><td>Inventario documental, estándares críticos, hallazgos</td></tr>
+          <tr><td style="font-weight:800;color:var(--red)">E3</td><td>Visión ejecutiva del crecimiento, no negociables del ADN C&amp;W</td><td>Entrevista semiestructurada + canvas de beneficios</td><td>Alta Gerencia (C-Level)</td><td>Principios no negociables, criterios de escalamiento</td></tr>
+          <tr><td style="font-weight:800;color:var(--red)">E4</td><td>Validación de causas, priorización y brechas del programa</td><td>Encuesta + taller Ishikawa, Pareto y VSM</td><td>Líderes funcionales y directores clave</td><td>Ishikawa, Pareto, brechas de capacidad</td></tr>
+        </tbody></table>
+        <p style="margin-top:10px;font-style:italic">E1, E2 y E3 construyen evidencia. E4 integra esa evidencia en un escenario de validación colectiva.</p>
+      </div>
+    </div>
+
+    <div class="bc-slide" id="slide-10">
+      <div class="slide-header indigo"><div class="slide-num-badge">10</div><div><div class="slide-title-text">Escenario E4 de elicitation</div><div class="slide-subtitle">Validación de causa raíz y priorización para el diseño del programa</div></div></div>
+      <div class="slide-body">
+        <p>E4 es el punto donde la evidencia operativa, documental y directiva se confronta, se valida y se prioriza colectivamente.</p>
+        <div class="c red" style="margin-bottom:14px"><div class="cl red">Pregunta central</div><div class="cx">¿Qué causas explican hoy la variabilidad de la expansión y cuáles deben intervenirse primero para escalar sin perder consistencia ni esencia?</div></div>
+        <div class="g3">
+          <div><div class="sd">Participantes</div><div class="pgrid"><div class="pitem">VP Operaciones</div><div class="pitem">Líder Calidad/SGI</div><div class="pitem">Líder Formación</div><div class="pitem">Resp. expansión</div><div class="pitem">Directores de sede</div><div class="pitem">Tecnología / BI</div><div class="pitem">Finanzas</div><div class="pitem">Compras</div><div class="pitem">Coordinación</div></div></div>
+          <div><div class="sd">Instrumentos</div><div class="ilist"><div class="iitem">Encuesta previa de percepción</div><div class="iitem">Plantilla de Ishikawa</div><div class="iitem">Matriz de priorización</div><div class="iitem">Pareto consolidado</div><div class="iitem">Ficha de brechas</div><div class="iitem">VSM / mapa de flujo</div></div></div>
+          <div><div class="sd">Salidas</div><div class="ilist"><div class="iitem" style="background:#ECFDF5;color:#065F46">Ishikawa validado</div><div class="iitem" style="background:#ECFDF5;color:#065F46">Pareto priorizado</div><div class="iitem" style="background:#ECFDF5;color:#065F46">Brechas de capacidad</div><div class="iitem" style="background:#ECFDF5;color:#065F46">Criterios para alternativas</div><div class="iitem" style="background:#ECFDF5;color:#065F46">Insumos PWBS y roadmap</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bc-slide" id="slide-11">
+      <div class="slide-header red"><div class="slide-num-badge">11</div><div><div class="slide-title-text">Ishikawa ajustado y ampliado</div><div class="slide-subtitle">Variabilidad operativa y riesgo de dilución cultural por ausencia de modelo replicable, gobernable y trazable</div></div></div>
+      <div class="slide-body">
+        <div class="igrid"><div class="icat"><div class="icat-t">1. Procesos</div><ul><li>Flujo de apertura no estandarizado</li><li>Diferencias en ejecución entre sedes</li><li>Retrabajos por fallas en coordinación</li><li>Cierre débil de lecciones aprendidas</li></ul></div><div class="icat"><div class="icat-t">2. Estándares / Documentación</div><ul><li>Estándares no suficientemente claros</li><li>Checklists y manuales desactualizados</li><li>Brechas entre SGI y operación real</li><li>Auditorías aplicadas de forma desigual</li></ul></div><div class="icat"><div class="icat-t">3. Personas / Formación</div><ul><li>Formación desigual entre líderes</li><li>Inducción no homogénea</li><li>Dependencia del conocimiento tácito</li><li>Rotación de responsables clave</li></ul></div><div class="icat"><div class="icat-t">4. Gobernanza</div><ul><li>Roles y responsabilidades poco definidos</li><li>Decisiones centralizadas sin criterios</li><li>Escalamiento sin ruta formal</li><li>Ausencia de gates de decisión</li></ul></div><div class="icat"><div class="icat-t">5. Información / Seguimiento</div><ul><li>Información dispersa entre áreas</li><li>Indicadores no homologados entre sedes</li><li>Débil visibilidad de avance de aperturas</li><li>Falta de trazabilidad de incidencias</li></ul></div><div class="icat"><div class="icat-t">6. Articulación interáreas</div><ul><li>Desalineación operación-estrategia-sedes</li><li>Transferencia incompleta de requerimientos</li><li>Priorizaciones distintas por actor</li></ul></div></div>
+        <div class="c" style="margin-top:12px"><div class="cl">7. Entorno / Contexto externo</div><div class="cx">Cambios regulatorios y laborales · Presión inflacionaria y costos variables · Cambios en hábitos de consumo · Brechas tecnológicas en herramientas</div></div>
+      </div>
+    </div>
+
+    <div class="bc-slide" id="slide-12">
+      <div class="slide-header red"><div class="slide-num-badge">12</div><div><div class="slide-title-text">Pareto ajustado</div><div class="slide-subtitle">Del mapa causal validado al foco real de intervención</div></div></div>
+      <div class="slide-body">
+        <p>Las primeras cinco causas concentran el <strong>86.3% del problema</strong>. El Pareto convierte el Ishikawa en foco programático.</p>
+        <table style="margin-top:12px"><thead><tr><th>Causa Pareto final</th><th>Peso</th><th>%</th><th>% Acum.</th><th>Anclaje Ishikawa</th></tr></thead><tbody>
+          <tr><td style="font-weight:700">Falta de formación</td><td>62</td><td>18.6%</td><td>18.6%</td><td>Personas y formación</td></tr>
+          <tr><td style="font-weight:700">Auditoría desigual / brecha SGI-operación</td><td>58</td><td>17.4%</td><td>36.0%</td><td>Estándares y documentación</td></tr>
+          <tr><td style="font-weight:700">Inducción no homogénea / conocimiento tácito</td><td>54</td><td>16.2%</td><td>52.1%</td><td>Personas y formación</td></tr>
+          <tr><td style="font-weight:700">Falta de información en tiempo real</td><td>50</td><td>15.0%</td><td>67.1%</td><td>Información y seguimiento</td></tr>
+          <tr style="background:#FDECED"><td style="font-weight:800;color:var(--red-dk)">Falta de estandarización mínima</td><td><strong>48</strong></td><td><strong>14.4%</strong></td><td><strong>81.4%</strong></td><td>Estándares / Procesos</td></tr>
+          <tr><td>Decisiones centralizadas sin criterios</td><td>21</td><td>6.3%</td><td>87.7%</td><td>Gobernanza</td></tr>
+          <tr><td>Desarticulación interáreas</td><td>21</td><td>6.3%</td><td>94.0%</td><td>Cadena de valor</td></tr>
+          <tr><td>Procesos rígidos</td><td>20</td><td>6.0%</td><td>100%</td><td>Procesos</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+
+    <div class="bc-slide" id="slide-13">
+      <div class="slide-header amber"><div class="slide-num-badge">13</div><div><div class="slide-title-text">Brechas de capacidad para la expansión</div></div></div>
+      <div class="slide-body">
+        <table><thead><tr><th>Causa priorizada</th><th>Capacidad actual</th><th>Solución requerida</th><th>Objetivo del programa</th></tr></thead><tbody>
+          <tr><td style="font-weight:700">Falta de formación</td><td>Experiencia práctica dispersa</td><td>Programa formal de formación para líderes y actores de expansión</td><td>Fortalecer competencias para ejecutar aperturas con mayor consistencia</td></tr>
+          <tr><td style="font-weight:700">Auditoría desigual / brecha SGI</td><td>SGI vigente con auditorías y documentación parcial</td><td>Rediseño del modelo de auditoría hacia enfoque preventivo y formativo</td><td>Gobernanza de expansión con autonomías y control útil</td></tr>
+          <tr><td style="font-weight:700">Inducción no homogénea</td><td>Experiencia práctica valiosa, no suficientemente sistematizada</td><td>Estructura formal de onboarding, transferencia y apropiación operativa</td><td>Aumentar consistencia, absorción y sostenibilidad del modelo</td></tr>
+          <tr><td style="font-weight:700">Falta de información en tiempo real</td><td>Herramientas parciales sin integración real</td><td>Capacidad tecnológica mínima: seguimiento, alertas y trazabilidad</td><td>Mejorar control y toma de decisiones en tiempo real</td></tr>
+          <tr><td style="font-weight:700">Falta de estandarización mínima</td><td>Documentación parcial en SGI</td><td>Manual operativo mínimo replicable + checklist de estándares críticos</td><td>Estandarizar lo esencial sin rigidizar el modelo</td></tr>
+          <tr><td style="font-weight:700">Decisiones centralizadas sin criterios</td><td>Liderazgo central fuerte, baja explicitación de autonomías</td><td>MAD + modelo de gobernanza + gates de decisión</td><td>Escalar con control sin depender del criterio tácito</td></tr>
+          <tr><td style="font-weight:700">Desarticulación interáreas</td><td>Coordinación existente, no visible ni estructurada</td><td>Mapa de interfaces y transferencia clara de requerimientos</td><td>Aumentar coherencia de la cadena de valor en la expansión</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+
+    <div class="bc-slide" id="slide-14">
+      <div class="slide-header red"><div class="slide-num-badge">14</div><div><div class="slide-title-text">Evaluación de alternativas integradas de solución</div></div></div>
+      <div class="slide-body">
+        <div class="alt"><div class="altc">A</div><div style="flex:1"><div class="ct">Consultoría puntual de procesos</div><div style="color:#2E8B6A;font-size:12px">✔ Puede ordenar procesos y documentación</div><div style="color:var(--red-dk);font-size:12px">✗ No asegura apropiación ni corrige formación, gobernanza o trazabilidad</div></div><span class="tag sc">9/15</span></div>
+        <div class="alt"><div class="altc">B</div><div style="flex:1"><div class="ct">Solución tecnológica acelerada</div><div style="color:#2E8B6A;font-size:12px">✔ Mejora visibilidad y trazabilidad de seguimiento</div><div style="color:var(--red-dk);font-size:12px">✗ Riesgo de digitalizar desorden en lugar de corregirlo</div></div><span class="tag sc">12/15</span></div>
+        <div class="alt rec"><div class="altc" style="background:var(--red);color:#fff">C</div><div style="flex:1"><div class="ct">Programa escalonado propio <span class="score-rec">RECOMENDADA</span></div><div style="color:#2E8B6A;font-size:12px">✔ Responde integralmente a causas priorizadas. Protege cultura, operación y coherencia</div><div style="color:var(--red-dk);font-size:12px">✗ Requiere coordinación inicial y disciplina en gates</div></div><span class="tag sc" style="background:#065F46">14/15</span></div>
+        <div class="alt"><div class="altc">D</div><div style="flex:1"><div class="ct">Rediseño organizacional estructural</div><div style="color:#2E8B6A;font-size:12px">✔ Fortalece accountability y ordena funciones</div><div style="color:var(--red-dk);font-size:12px">✗ Sobredimensiona respuesta antes de contar con evidencia</div></div><span class="tag sc">7/15</span></div>
+        <div class="alt"><div class="altc">E</div><div style="flex:1"><div class="ct">No hacer nada</div><div style="color:var(--red-dk);font-size:12px">✗ Mantiene el problema intacto. Aumenta el costo oculto del crecimiento.</div></div><span class="tag sc" style="background:#888">3/15</span></div>
+        <p style="margin-top:10px;font-size:11px;color:var(--text3)">Criterios: Alineación estratégica / Viabilidad Operativa / Rapidez de Implementación</p>
+      </div>
+    </div>
+
+    <div class="bc-slide" id="slide-15">
+      <div class="slide-header teal"><div class="slide-num-badge">15</div><div><div class="slide-title-text">Arquitectura de línea base</div><div class="slide-subtitle">Qué mediremos para convertir la hipótesis estratégica en evidencia</div></div></div>
+      <div class="slide-body">
+        <p>La línea base se levantará en Fase 1. No es serio prometer retorno exacto sin ese punto de partida.</p>
+        <table style="margin-top:12px"><thead><tr><th>Dimensión de medición</th><th>Fuentes sugeridas</th></tr></thead><tbody>
+          <tr><td style="font-weight:700">Cumplimiento de estándares críticos</td><td>Auditorías y checklists de apertura</td></tr>
+          <tr><td style="font-weight:700">Retrabajos e incidencias</td><td>Registros de incidencias y reprocesos</td></tr>
+          <tr><td style="font-weight:700">Tiempo de habilitación y estabilización</td><td>Cronogramas y tiempos reales de apertura</td></tr>
+          <tr><td style="font-weight:700">Coherencia cultural y nivel de adopción</td><td>Encuestas de apropiación en sede piloto</td></tr>
+          <tr><td style="font-weight:700">Calidad de articulación interáreas</td><td>Registro de hitos, bloqueos y transferencias</td></tr>
+        </tbody></table>
+        <p style="margin-top:12px;font-style:italic">La arquitectura de medición servirá para evaluar el piloto y decidir si el programa crea valor real y sostenible.</p>
+      </div>
+    </div>
+
+    <div class="bc-slide" id="slide-16">
+      <div class="slide-header red"><div class="slide-num-badge">16</div><div><div class="slide-title-text">Alcance del programa y PWBS ajustado</div><div class="slide-subtitle">Los 5 proyectos representan las capacidades necesarias para escalar sin perder esencia</div></div></div>
+      <div class="slide-body">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div class="c blu"><div class="cl blu">P1 · Alineación estratégica y baseline</div><ul style="margin-top:6px"><li>Business Case refinado + KPIs aprobados</li><li>Mapa y estrategia de stakeholders</li><li>Principios no negociables del ADN C&amp;W</li><li>Línea base e identificación de brechas críticas</li></ul></div>
+          <div class="c grn"><div class="cl grn">P2 · Estandarización mínima replicable</div><ul style="margin-top:6px"><li>Manual operativo mínimo de apertura</li><li>Checklist de estándares críticos</li><li>Guía de adaptación local</li><li>Kit de onboarding para nuevas sedes</li></ul></div>
+          <div class="c pur"><div class="cl pur">P3 · Gobernanza y autonomías para escalar</div><ul style="margin-top:6px"><li>Matriz de autoridad delegada / MAD</li><li>Modelo de gobernanza de apertura</li><li>Tablero mínimo de seguimiento</li><li>Protocolo de auditoría formativa</li></ul></div>
+          <div class="c amb"><div class="cl amb">P4 · Apropiación cultural y gestión del cambio</div><ul style="margin-top:6px"><li>Diagnóstico cultural en sede piloto</li><li>Plan de change management con sponsorship</li><li>Formación para líderes de sede</li><li>Activación de lecciones aprendidas</li></ul></div>
+          <div class="c red"><div class="cl red">P5 · Piloto y escalabilidad basada en evidencia</div><ul style="margin-top:6px"><li>Piloto en sede seleccionada</li><li>Medición de KPIs vs baseline</li><li>Registro de lecciones aprendidas</li><li>Plan de réplica o decisión: escalar / ajustar / cerrar</li></ul></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bc-slide" id="slide-17">
+      <div class="slide-header amber"><div class="slide-num-badge">17</div><div><div class="slide-title-text">Equipo mínimo, tríada y RACI</div></div></div>
+      <div class="slide-body">
+        <div class="g2">
+          <div>
+            <div class="sd">Tríada de liderazgo</div>
+            <div class="c red" style="margin-bottom:8px"><div class="cl red">Presidencia</div><div class="ct">Sponsor del programa</div></div>
+            <div class="c amb" style="margin-bottom:8px"><div class="cl amb">VP Operaciones</div><div class="ct">Product Owner</div></div>
+            <div class="c blu" style="margin-bottom:8px"><div class="cl blu">Coordinación metodológica</div><div class="ct">Consultor externo + coord. interna</div></div>
+            <div class="sd" style="margin-top:12px">Soportes críticos</div>
+            <div class="tagrow"><span class="tag grn">Calidad / SGI</span><span class="tag grn">Formación / Talento</span><span class="tag grn">Tecnología / BI</span><span class="tag grn">Finanzas / Control</span><span class="tag grn">Expansión</span></div>
+          </div>
+          <div>
+            <div class="sd">RACI resumido</div>
+            <table><tr><td style="font-weight:700">Sponsor (Presidencia)</td><td>Aprueba gates y decisiones clave</td></tr><tr><td style="font-weight:700">VP Operaciones</td><td>Valida el producto operativo en cada fase</td></tr><tr><td style="font-weight:700">Coordinación del programa</td><td>Integra fuentes, seguimiento y entregables</td></tr><tr><td style="font-weight:700">Consultor externo</td><td>Diseña, facilita y estructura metodológicamente</td></tr><tr><td style="font-weight:700">Calidad, Formación, BI, Finanzas</td><td>Consultados según frente de intervención</td></tr><tr><td style="font-weight:700">Directores de sede</td><td>Validadores operativos del piloto</td></tr></table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bc-slide" id="slide-18">
+      <div class="slide-header dark"><div class="slide-num-badge">18</div><div><div class="slide-title-text">Roadmap del programa y gates de decisión</div><div class="slide-subtitle">5 fases · 8 meses</div></div></div>
+      <div class="slide-body">
+        <div class="pc"><div class="pb"><div class="pi">F1</div><div class="pr">0–1.5 M</div></div><div><div class="pn">Alinear crecimiento con esencia</div><ul><li>Definición explícita del ADN no negociable</li><li>Arquitectura de baseline</li><li>Identificación de brechas críticas</li><li>Activación temprana de sponsorship</li></ul><div class="gl">◆ Gate 1: Sponsor valida propósito, baseline y punto de partida real</div></div></div>
+        <div class="pc"><div class="pb"><div class="pi">F2</div><div class="pr">1–3 M</div></div><div><div class="pn">Estandarizar lo crítico sin rigidizar</div><ul><li>Manual operativo mínimo viable</li><li>Estándares críticos</li><li>Guía de adaptación local</li><li>Criterios de excepción y adaptación</li></ul><div class="gl">◆ Gate 2: Modelo operativo validado para pilotaje</div></div></div>
+        <div class="pc"><div class="pb"><div class="pi">F3</div><div class="pr">3–4.5 M</div></div><div><div class="pn">Diseñar gobernanza para escalar</div><ul><li>Matriz de autoridad / Autonomías y delegaciones</li><li>Modelo de gobernanza de apertura</li><li>Tablero mínimo de seguimiento</li><li>Auditorías hacia aprendizaje</li></ul><div class="gl">◆ Gate 3: Gobernanza y MAD aprobados para pilotaje</div></div></div>
+        <div class="pc"><div class="pb"><div class="pi">F4</div><div class="pr">4–6 M</div></div><div><div class="pn">Consolidar apropiación cultural del modelo</div><ul><li>Formación para líderes de sede</li><li>Plan de change management</li><li>Integración de valores C&amp;W en práctica</li><li>Acompañamiento de adopción</li></ul><div class="gl">◆ Gate 4: Nivel mínimo de adopción suficiente para validar el modelo</div></div></div>
+        <div class="pc"><div class="pb" style="background:var(--brown)"><div class="pi">F5</div><div class="pr">6–8 M</div></div><div><div class="pn">Validar con evidencia</div><ul><li>Ejecución del piloto seleccionado</li><li>Medición vs baseline (KPIs)</li><li>Registro de lecciones aprendidas</li><li>Plan de réplica o decisión final</li></ul><div class="gl" style="background:var(--cream2);color:var(--brown)">◆ Gate 5: Decisión — escalar / ajustar / cerrar</div></div></div>
+        <p style="font-style:italic">La gestión del cambio inicia desde Fase 1 y se consolida en Fase 4. El programa avanza por evidencia.</p>
+      </div>
+    </div>
+
+    <div class="bc-slide" id="slide-19">
+      <div class="slide-header teal"><div class="slide-num-badge">19</div><div><div class="slide-title-text">Beneficios esperados, KPIs y metas</div></div></div>
+      <div class="slide-body">
+        <table><thead><tr><th>Beneficio</th><th>KPI principal</th><th>Línea base</th><th>Meta</th></tr></thead><tbody>
+          <tr><td style="font-weight:700">Reducir variabilidad operativa</td><td>% de estándares críticos cumplidos en primera auditoría de apertura</td><td>Fase 1</td><td style="font-weight:800;color:var(--red)">≥ 90%</td></tr>
+          <tr><td style="font-weight:700">Disminuir reprocesos</td><td>Nº de incidencias / retrabajos por apertura y estabilización</td><td>Fase 1</td><td style="font-weight:800;color:var(--red)">−20%</td></tr>
+          <tr><td style="font-weight:700">Aumentar replicabilidad</td><td>Tiempo promedio desde decisión de apertura hasta operación estable</td><td>Fase 1</td><td style="font-weight:800;color:var(--red)">−25%</td></tr>
+          <tr><td style="font-weight:700">Preservar coherencia cultural</td><td>% de adopción de principios no negociables del modelo C&amp;W</td><td>Fase 1</td><td style="font-weight:800;color:var(--red)">≥ 85%</td></tr>
+          <tr><td style="font-weight:700">Mejorar articulación interáreas</td><td>% de hitos críticos transferidos sin reproceso ni bloqueo</td><td>Fase 1</td><td>A definir con baseline</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+
+    <div class="bc-slide" id="slide-20">
+      <div class="slide-header teal"><div class="slide-num-badge">20</div><div><div class="slide-title-text">Plan de gestión de beneficios y sostenibilidad</div></div></div>
+      <div class="slide-body">
+        <table><thead><tr><th>Beneficio</th><th>Dueño</th><th>Método / fuente</th><th>Frecuencia</th><th>Regla de sostenibilidad</th></tr></thead><tbody>
+          <tr><td style="font-weight:700">Reducir variabilidad operativa</td><td>VP Operaciones + Calidad</td><td>Auditoría formativa + checklist de apertura</td><td>Mensual + Gate 2</td><td>Se sostiene si el cumplimiento se mantiene sin intervención extraordinaria</td></tr>
+          <tr><td style="font-weight:700">Disminuir reprocesos</td><td>VP Operaciones</td><td>Registro de incidencias y post mortem de apertura</td><td>Semanal en piloto</td><td>Se sostiene si baja el reproceso sin aumentar presión central</td></tr>
+          <tr><td style="font-weight:700">Aumentar replicabilidad</td><td>Expansión / Operaciones</td><td>Hitos reales de cronograma y acta de estabilización</td><td>Por apertura</td><td>Se sostiene si mejora tiempo sin sacrificar estándares</td></tr>
+          <tr><td style="font-weight:700">Preservar coherencia cultural</td><td>VP Talento + Directores</td><td>Encuesta de apropiación + checklist cultural</td><td>Inicio, cierre, 30/60 días</td><td>Se sostiene si la adopción se mantiene después del arranque</td></tr>
+          <tr><td style="font-weight:700">Mejorar articulación interáreas</td><td>Coordinación + Operaciones</td><td>Registro de handoffs, bloqueos y retrabajos</td><td>Por fase y por piloto</td><td>Se sostiene si la apertura requiere menos re-tránsitos y escalamiento</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+
+    <div class="bc-slide" id="slide-21">
+      <div class="slide-header indigo"><div class="slide-num-badge">21</div><div><div class="slide-title-text">Factibilidad y riesgos del programa</div></div></div>
+      <div class="slide-body">
+        <div class="feas"><div class="fc hi" style="border-radius:10px;padding:14px;text-align:center"><div style="font-size:11px;font-weight:700;color:#065F46;text-transform:uppercase;letter-spacing:1px">Estratégica</div><div style="font-size:20px;font-weight:800;color:#065F46;margin-top:4px">Alta</div></div><div class="fc md" style="border-radius:10px;padding:14px;text-align:center"><div style="font-size:11px;font-weight:700;color:#92400E;text-transform:uppercase;letter-spacing:1px">Operativa</div><div style="font-size:20px;font-weight:800;color:#92400E;margin-top:4px">Media-alta</div></div><div class="fc co" style="border-radius:10px;padding:14px;text-align:center"><div style="font-size:11px;font-weight:700;color:#1E40AF;text-transform:uppercase;letter-spacing:1px">Financiera</div><div style="font-size:16px;font-weight:800;color:#1E40AF;margin-top:4px">Razonable, condicionada a baseline y piloto</div></div></div>
+        <div class="sd">Riesgos principales y mitigación</div>
+        <div class="ri"><div style="color:#F59E0B;font-size:14px;flex-shrink:0">⚠</div><div><div class="ri-t">Resistencia al cambio</div><div class="ri-m">✔ Enfoque gradual · sponsorship visible y activo</div></div></div>
+        <div class="ri"><div style="color:#F59E0B;font-size:14px;flex-shrink:0">⚠</div><div><div class="ri-t">Sobrecarga operativa</div><div class="ri-m">✔ Piloto acotado · recursos dedicados mínimos</div></div></div>
+        <div class="ri"><div style="color:#F59E0B;font-size:14px;flex-shrink:0">⚠</div><div><div class="ri-t">Estandarización excesiva</div><div class="ri-m">✔ Estándar mínimo, no sobrerregulación · guía de adaptación</div></div></div>
+        <div class="ri"><div style="color:#F59E0B;font-size:14px;flex-shrink:0">⚠</div><div><div class="ri-t">Mala calidad de línea base</div><div class="ri-m">✔ Medición simple, fuentes verificadas y acordadas</div></div></div>
+        <div class="ri"><div style="color:#F59E0B;font-size:14px;flex-shrink:0">⚠</div><div><div class="ri-t">Baja apropiación en sede piloto</div><div class="ri-m">✔ Líderes involucrados desde Fase 1 · formación oportuna</div></div></div>
+        <div class="ri"><div style="color:#F59E0B;font-size:14px;flex-shrink:0">⚠</div><div><div class="ri-t">Falta de disciplina en handoffs</div><div class="ri-m">✔ Responsables explícitos en interfaces críticas · gates formales</div></div></div>
+      </div>
+    </div>
+
+    <div class="bc-slide" id="slide-22">
+      <div class="slide-header dark"><div class="slide-num-badge">22</div><div><div class="slide-title-text">Recomendación y decisión solicitada</div><div class="slide-subtitle">Qué se solicita aprobar hoy</div></div></div>
+      <div class="slide-body">
+        <div class="rec-i"><div class="rec-n">1</div><div><div class="ntl">Maduración formal del Business Case</div><div class="ntx">Refinar hipótesis, alinear alcance y consolidar la visión de programa con el sponsor y los actores clave.</div></div></div>
+        <div class="rec-i"><div class="rec-n">2</div><div><div class="ntl">Levantamiento de línea base</div><div class="ntx">Ejecutar los escenarios E1 a E4 para cuantificar la magnitud del problema y anclar los KPIs de inicio.</div></div></div>
+        <div class="rec-i"><div class="rec-n">3</div><div><div class="ntl">Diseño y ejecución del piloto</div><div class="ntx">Construir las capacidades P1–P4 y ejecutar el piloto P5 en una sede seleccionada con medición rigurosa.</div></div></div>
+        <div class="rec-i"><div class="rec-n">4</div><div><div class="ntl">Escalamiento sujeto a evidencia</div><div class="ntx">Cualquier réplica posterior queda condicionada al Gate 5 y a los resultados concretos del piloto.</div></div></div>
+        <div class="cb">No se solicita fe en una idea.<br>Se solicita autorización para construir evidencia suficiente y decidir mejor.</div>
+      </div>
+    </div>
+
+  </div>
+</div
+</div>
+
+<!-- ARCH SECTION -->
+<div id="arch-section">
+  <div id="arch-inner"></div>
+</div>
+
+<!-- CELL MODAL -->
+<div id="modal-overlay" onclick="if(event.target===this){openCell=null;renderArch();}">
+  <div id="modal-box"></div>
+</div>
+
+<!-- GATE MODAL -->
+<div id="gate-overlay" style="display:none;position:fixed;inset:0;background:rgba(44,36,22,.6);z-index:1000;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this){openGate=null;renderArch();}">
+  <div id="gate-box" style="background:#fff;border-radius:16px;padding:26px 28px;max-width:460px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25)"></div>
+</div>
+
+<script>
+
+const PHASES=[{id:"F1",name:"Alinear crecimiento con esencia"},{id:"F2",name:"Estandarizar lo crítico sin rigidizar"},{id:"F3",name:"Diseñar gobernanza para escalar"},{id:"F4",name:"Consolidar apropiación cultural"},{id:"F5",name:"Validar con evidencia"}];
+const PROJ=[{id:"P1",name:"Alineación estratégica y baseline",lead:"Presidencia / Coordinación",color:"#2563A8",light:"#EFF6FF",border:"#BFDBFE"},{id:"P2",name:"Estandarización mínima replicable",lead:"Líder Calidad / SGI",color:"#2E8B6A",light:"#ECFDF5",border:"#A7F3D0"},{id:"P3",name:"Gobernanza y autonomías para escalar",lead:"VP Operaciones + Coordinación",color:"#7C3CBF",light:"#F5F3FF",border:"#DDD6FE"},{id:"P4",name:"Apropiación cultural y gestión del cambio",lead:"VP Talento / Formación",color:"#C27A0A",light:"#FFFBEB",border:"#FDE68A"},{id:"P5",name:"Piloto y escalabilidad basada en evidencia",lead:"Expansión / Operaciones",color:"#C0402A",light:"#FEF2F2",border:"#FECACA"}];
+const STATUS={ex:{bg:"#D1FAE5",txt:"#065F46",lbl:"Explícito"},pa:{bg:"#FEF3C7",txt:"#92400E",lbl:"Parcialmente explícito"},im:{bg:"#FFE4E6",txt:"#9F1239",lbl:"Implícito / necesario"}};
+const SMAP={"F1-P1":"pa","F1-P2":"pa","F1-P3":"im","F1-P4":"im","F1-P5":"im","F2-P1":"pa","F2-P2":"ex","F2-P3":"pa","F2-P4":"pa","F2-P5":"pa","F3-P1":"im","F3-P2":"im","F3-P3":"ex","F3-P4":"im","F3-P5":"im","F4-P1":"im","F4-P2":"im","F4-P3":"im","F4-P4":"ex","F4-P5":"pa","F5-P1":"pa","F5-P2":"im","F5-P3":"im","F5-P4":"im","F5-P5":"ex"};
+const GATES={F1:{id:"G1",decision:"Validar propósito, baseline y punto de partida real",responsible:"Sponsor + VP Operaciones",result:"Autoriza pasar de diagnóstico a diseño controlado",evidence:["BC refinado v1","Mapa de stakeholders","Arquitectura de baseline","Brechas críticas","Criterios de piloto"]},F2:{id:"G2",decision:"Validar modelo operativo para pilotaje",responsible:"Sponsor + VP Operaciones + Calidad",result:"Confirma que existe una base mínima replicable",evidence:["Manual mínimo v1","Checklist crítico v1","Guía de adaptación","Plan de cambio v1","Plan preliminar de piloto"]},F3:{id:"G3",decision:"Aprobar gobernanza y autonomías para pilotaje",responsible:"Sponsor + VP Operaciones",result:"Autoriza que el piloto opere bajo reglas explícitas",evidence:["MAD v1","Modelo de gobernanza","Gates definidos","Rutas de escalamiento","Protocolo de auditoría formativa","Tablero mínimo"]},F4:{id:"G4",decision:"Autorizar piloto con nivel mínimo de adopción",responsible:"Sponsor + VP Operaciones + Directores de sede",result:"Define go/no go del piloto",evidence:["Formación ejecutada","Sponsorship visible","Readiness de sede","Dashboard activo","Acta de readiness"]},F5:{id:"G5",decision:"Decidir escalar / ajustar / cerrar",responsible:"Presidencia / Sponsor",result:"Convierte evidencia en decisión de continuidad",evidence:["Resultados del piloto vs baseline","Evaluación de beneficios","Validación de estándar y gobernanza","Recomendación ejecutiva final"]}};
+const MATRIX={"F1-P1":{obj:"Definir punto de partida, propósito y marco de medición",del:["Business Case refinado v1","Mapa de stakeholders","Estrategia de involucramiento","Principios no negociables","Arquitectura de baseline","Ficha técnica de KPI","Informe inicial de brechas"],mec:"Lanzamiento del programa y alineación con sponsor",cap:"Claridad estratégica y base verificable",out:"Propósito validado y baseline lista",ben:"Reducir ambigüedad de arranque"},"F1-P2":{obj:"Entender estándares actuales, vacíos y obsolescencias",del:["Inventario documental","Matriz SGI vs operación","Mapa de estándares críticos","Diagnóstico de vacíos","Criterios de diseño del estándar mínimo"],mec:"Diagnóstico documental y funcional previo a estandarizar",cap:"Lectura estructurada del estándar actual",out:"Base para diseñar el estándar mínimo viable",ben:"Reducir variabilidad de diseño futuro"},"F1-P3":{obj:"Diagnosticar cómo se decide hoy y dónde están los vacíos",del:["Mapa actual de decisiones","Diagnóstico de roles y traslapes","Inventario de aprobaciones","Lista de decisiones críticas sin criterio explícito"],mec:"Levantamiento de gobernanza actual",cap:"Visibilidad de accountability y vacíos de decisión",out:"Base para diseñar MAD y gates",ben:"Menor dependencia del criterio informal"},"F1-P4":{obj:"Identificar impactos de cambio y barreras de adopción",del:["Diagnóstico preliminar de impactos","Mapa de actores afectados","Hipótesis de resistencias","Narrativa de cambio","Estrategia inicial de sponsorship"],mec:"Activación temprana del cambio y sponsorship",cap:"Preparación para adopción",out:"Disposición inicial para el cambio",ben:"Reducir resistencia futura"},"F1-P5":{obj:"Diseñar la lógica del piloto desde el inicio",del:["Criterios de selección de sede","Matriz de elegibilidad","Hipótesis de validación","Diseño conceptual del piloto","Esquema preliminar de medición"],mec:"Diseño anticipado del piloto",cap:"Marco de validación del piloto",out:"Piloto concebido como instrumento de decisión",ben:"Escalamiento basado en evidencia"},"F2-P1":{obj:"Cerrar línea base y traducir hallazgos a metas",del:["Línea base validada","Informe AS-IS consolidado","Matriz problema-causa-brecha-capacidad","Metas refinadas por beneficio","Actualización del alcance"],mec:"Consolidación de baseline y metas",cap:"Base única de medición y trazabilidad",out:"Metas y umbrales de gestión definidos",ben:"Soporte a beneficios y control"},"F2-P2":{obj:"Diseñar el estándar mínimo viable",del:["Manual operativo mínimo v1","Checklist de estándares críticos v1","Guía de adaptación local v1","Matriz de excepciones","Kit preliminar de onboarding","Protocolo de actualización"],mec:"Diseño del estándar y preparación para despliegue",cap:"Consistencia operativa mínima",out:"Modelo operativo listo para pilotaje",ben:"Reducir variabilidad operativa"},"F2-P3":{obj:"Diseñar la estructura inicial de control y decisión",del:["Borrador de modelo de gobernanza","Borrador de MAD","Definición preliminar de gates","Rutas de escalamiento","Diseño del tablero mínimo"],mec:"Diseño de gobernanza para futuras decisiones",cap:"Arquitectura inicial de decisión",out:"Borrador de gobernanza operativa",ben:"Reducir fricción por decisión ambigua"},"F2-P4":{obj:"Traducir el nuevo modelo a experiencia de adopción",del:["Plan de gestión del cambio v1","Mapa de impactos por rol","Estrategia de comunicación","Diseño del esquema de formación","Diseño de onboarding cultural-operativo","Mapa de mensajes"],mec:"Preparación de adopción y comunicación",cap:"Ruta de cambio y aprendizaje",out:"Cambio explicado y entrenable",ben:"Aumentar apropiación del modelo"},"F2-P5":{obj:"Preparar la ejecución del piloto con base en lo diseñado",del:["Plan preliminar de piloto","Requerimientos de preparación de sede","Matriz de KPIs del piloto","Diseño de captura de incidencias","Cronograma macro"],mec:"Diseño operativo del piloto",cap:"Piloto medible y gobernable",out:"Piloto listo para detallar",ben:"Preparar validación de replicabilidad"},"F3-P1":{obj:"Integrar evidencia y preparar control ejecutivo",del:["Scorecard del programa","Criterios ejecutivos de decisión por gate","Matriz de dependencias","Business Case actualizado","Dossier Gate 3"],mec:"Integración de evidencia y control ejecutivo",cap:"Control gerencial del programa",out:"Base para aprobar gobernanza y despliegue",ben:"Mejorar capacidad de decisión"},"F3-P2":{obj:"Integrar estándares con responsables y control",del:["Manual operativo mínimo v2","Checklist con responsables","Matriz de validación de cumplimiento","Formato de auditoría formativa","Paquete documental para piloto"],mec:"Ajuste del estándar a control y uso",cap:"Estándar ejecutable y auditable",out:"Paquete de estándares listo para uso controlado",ben:"Consistencia y control sin rigidez"},"F3-P3":{obj:"Formalizar la gobernanza que soporta la expansión",del:["MAD v1","Modelo de gobernanza aprobado","Gates y criterios","Protocolo de auditoría formativa","Rutas de escalamiento","Estructura de comités","Tablero mínimo v1"],mec:"Formalización de autoridad y control",cap:"Autonomía con control",out:"Gobernanza lista para operar",ben:"Menor dependencia del criterio informal"},"F3-P4":{obj:"Alinear cambio con nuevas reglas de juego",del:["Plan de change management v2","Estrategia de adopción de MAD y gates","Plan de formación detallado","Toolkit de liderazgo","Diseño de lecciones aprendidas"],mec:"Ajuste de adopción al modelo de gobierno",cap:"Cambio integrado al gobierno",out:"Actores preparados para nuevas reglas",ben:"Mayor adopción y menor fricción"},"F3-P5":{obj:"Preparar ejecución del piloto bajo reglas claras",del:["Plan detallado de piloto","RACI del piloto","Plan de escalamiento e incidencias","Protocolo de medición","Checklist de readiness"],mec:"Preparación formal para ejecución controlada",cap:"Piloto ejecutable",out:"Piloto listo bajo gobierno y medición",ben:"Reducir riesgo de prueba"},"F4-P1":{obj:"Consolidar readiness y visibilidad de beneficios",del:["Tablero ejecutivo de beneficios","Informe de readiness para piloto","Matriz de precondiciones","Dossier Gate 4"],mec:"Verificación previa a arranque del piloto",cap:"Readiness integral",out:"Autorización con evidencia para iniciar piloto",ben:"Evitar arranques sin condiciones"},"F4-P2":{obj:"Convertir el estándar en práctica entrenable",del:["Material pedagógico de estándares","Guía rápida de aplicación","Formato de dudas/excepciones","Registro de hallazgos de adopción","Estándar de trabajo para entrenamiento"],mec:"Despliegue del estándar a práctica",cap:"Estándar adoptable",out:"Uso consistente del estándar en sede",ben:"Mejorar consistencia operativa"},"F4-P3":{obj:"Poner en uso el modelo de gobierno",del:["Instructivo de uso del MAD","Agenda de foros de decisión","Dashboard operativo activo","Registro de decisiones y excepciones","Informe de adopción de gobernanza"],mec:"Entrada en operación de la gobernanza",cap:"Gobernanza usada en la realidad",out:"Prueba de operación del modelo de decisión",ben:"Mejor coordinación y control"},"F4-P4":{obj:"Ejecutar la apropiación del modelo",del:["Formación a líderes de sede","Materiales operativos y culturales","Guía de valores C&W a práctica","Plan de acompañamiento","Evidencia de sponsorship","Registro de resistencias"],mec:"Implementación de adopción y sponsorship",cap:"Apropiación cultural y operativa",out:"Nivel mínimo de adopción para validar en piloto",ben:"Preservar coherencia cultural"},"F4-P5":{obj:"Cerrar preparación del piloto",del:["Sede piloto seleccionada y aprobada","Acta de readiness","Paquete de movilización","Cronograma detallado","Plan de acompañamiento de arranque","Dossier Gate 4 desde P5"],mec:"Movilización final a ejecución del piloto",cap:"Condiciones habilitantes del piloto",out:"Piloto listo para arrancar",ben:"Reducir fricción de arranque"},"F5-P1":{obj:"Traducir evidencia del piloto en decisión ejecutiva",del:["Informe de resultados vs baseline","Actualización final del Business Case","Evaluación temprana de beneficios","Recomendación ejecutiva","Dossier Gate 5","Cierre de P1"],mec:"Conversión de resultados en decisión",cap:"Lectura ejecutiva de valor",out:"Decisión de continuidad basada en evidencia",ben:"Escalar/ajustar/cerrar con criterio"},"F5-P2":{obj:"Validar y cerrar el estándar mínimo para réplica",del:["Manual operativo validado v3","Checklist validado v3","Informe de cumplimiento","Registro de excepciones reales","Paquete final de estandarización","Cierre de P2"],mec:"Ajuste final del estándar con evidencia del piloto",cap:"Estándar listo para réplica",out:"Estándar robusto y aplicable",ben:"Reducir variabilidad en escalamiento"},"F5-P3":{obj:"Validar efectividad de la gobernanza",del:["Evaluación de efectividad de gobernanza","Informe de gates y escalamiento","MAD v2 ajustado","Dashboard final","Paquete de gobernanza para réplica","Cierre de P3"],mec:"Ajuste fino del gobierno con resultados del piloto",cap:"Gobernanza replicable",out:"Modelo de decisión validado",ben:"Reducir dependencia del criterio informal"},"F5-P4":{obj:"Verificar adopción y sostenibilidad del modelo",del:["Informe de adopción cultural y operativa","Encuesta de apropiación analizada","Evaluación de efectividad de la formación","Lecciones de cambio","Recomendaciones de sostenibilidad","Cierre de P4"],mec:"Sostenimiento del cambio con evidencia",cap:"Adopción sostenible",out:"Señal de que la cultura soporta el crecimiento",ben:"Preservar esencia y coherencia"},"F5-P5":{obj:"Ejecutar y evaluar el piloto",del:["Piloto ejecutado","Informe de resultados vs baseline","Reporte de KPIs","Registro de incidencias/handoffs/tiempos","Evaluación de replicabilidad","Lecciones aprendidas","Propuesta de réplica","Recomendación final","Cierre de P5"],mec:"Piloto como transición a siguiente ola",cap:"Evidencia de replicabilidad",out:"Base para réplica controlada",ben:"Escalamiento basado en evidencia y menor riesgo"}};
+const TRANSVERSAL=[{id:"T1",name:"Gobierno del programa",hue:210,purpose:"Asegurar dirección, decisiones, cadencia y control",del:["Acta operativa","Plan de dirección","Calendario de comités","Bitácora de decisiones"],inst:["Charter operativo","Agenda de comité","Matriz de decisiones","Log de issues"],lead:"Coordinación + Sponsor",status:"pa",out:"Gobierno estable del programa y disciplina de decisión"},{id:"T2",name:"Gestión de beneficios",hue:165,purpose:"Traducir entregables y capacidades en outcomes y beneficios medibles",del:["Registro de beneficios","Mapa KPI-beneficio","Tablero ejecutivo","Criterios de sostenibilidad"],inst:["Benefits register","Ficha técnica de KPI","Reglas de medición","Informe de realización temprana"],lead:"VP Operaciones + Coordinación",status:"ex",out:"Seguimiento real de valor y decisión basada en beneficios"},{id:"T3",name:"Integración y control",hue:270,purpose:"Conectar componentes, dependencias, riesgos y cambios",del:["RAID log","Control de dependencias","Control de cambios","Matriz de trazabilidad"],inst:["RAID log","Dependency log","Control integrado de cambios","Matriz causa-brecha-beneficio"],lead:"Coordinación del programa",status:"im",out:"Integración programática y menor riesgo de desalineación"},{id:"T4",name:"Stakeholders y comunicaciones",hue:195,purpose:"Sostener apropiación y soporte visible del programa",del:["Plan de involucramiento","Plan de comunicaciones","Narrativa del programa","Estrategia de sponsorship"],inst:["Stakeholder engagement plan","Communications plan","Sponsor pack","Calendario de comunicaciones"],lead:"Coordinación + VP Talento",status:"pa",out:"Adopción, legitimidad y reducción de resistencia"},{id:"T5",name:"Dossiers de gate",hue:230,purpose:"Convertir evidencia en paquetes formales de decisión",del:["Paquete de evidencia por gate","Minuta de decisión"],inst:["Checklist de evidencia","Resumen ejecutivo por gate","Acta de paso / no paso"],lead:"Coordinación del programa",status:"im",out:"Toma de decisiones basada en evidencia"},{id:"T6",name:"Cierre y transición a réplica",hue:150,purpose:"Cerrar el programa y preparar escalamiento controlado",del:["Informe final del programa","Recomendación escalar/ajustar/cerrar","Plan de réplica"],inst:["Closeout report","Lecciones aprendidas","Plan de réplica controlada","Acta de cierre"],lead:"Sponsor + VP Operaciones + Coordinación",status:"ex",out:"Transición a siguiente ola con menor riesgo"}];
+const BENEFITS=[{ben:"Reducir variabilidad operativa",kpi:"% de estándares críticos cumplidos en primera auditoría de apertura",del:["Manual operativo mínimo","Checklist crítico","Auditoría formativa","Formación","Onboarding"],proj:"P2–P4",freq:"Mensual + corte de gate",signal:"Consistencia operativa mínima instalada y usada",color:"#2E8B6A"},{ben:"Disminuir reprocesos",kpi:"N° de incidencias / retrabajos por apertura y estabilización",del:["Mapa de interfaces","Rutas de escalamiento","Tablero mínimo","Protocolo de incidencias","Lecciones aprendidas"],proj:"P3–P5",freq:"Semanal en piloto",signal:"Menor fricción de coordinación y menos reproceso",color:"#2563A8"},{ben:"Aumentar replicabilidad",kpi:"Tiempo promedio desde decisión de apertura hasta operación estable",del:["MAD","Modelo de gobernanza","Readiness de sede","Piloto medido","Paquete de réplica"],proj:"P3–P5",freq:"Por apertura / Gate 5",signal:"Capacidad de escalar con menor dependencia del criterio tácito",color:"#7C3CBF"},{ben:"Preservar coherencia cultural",kpi:"% de adopción de principios no negociables del modelo C&W",del:["Principios no negociables","Guía valores-práctica","Plan de change management","Sponsorship","Encuesta de apropiación"],proj:"P1–P4",freq:"Inicio, cierre, 30/60 días",signal:"El crecimiento no diluye el ADN de la marca",color:"#C27A0A"},{ben:"Mejorar articulación interáreas",kpi:"% de hitos críticos transferidos sin reproceso ni bloqueo",del:["Mapa de interfaces","RACI del piloto","Registro de handoffs","Dashboard","Comités y gates"],proj:"P3–P5",freq:"Por fase y por piloto",signal:"Mayor coherencia de cadena de valor y handoffs más limpios",color:"#C0402A"}];
+
+let activeTab='matrix', activeFilter='all', openCell=null, openGate=null;
+
+function h(tag,attrs,children){
+  var el=document.createElement(tag);
+  if(attrs) Object.keys(attrs).forEach(k=>{
+    if(k==='style'&&typeof attrs[k]==='object'){Object.assign(el.style,attrs[k]);}
+    else if(k==='className'){el.className=attrs[k];}
+    else if(k.startsWith('on')&&typeof attrs[k]==='function'){el.addEventListener(k.slice(2).toLowerCase(),attrs[k]);}
+    else{el.setAttribute(k,attrs[k]);}
+  });
+  (Array.isArray(children)?children:[children]).forEach(c=>{
+    if(c==null||c===false||c===undefined)return;
+    el.appendChild(typeof c==='string'?document.createTextNode(c):c);
+  });
+  return el;
+}
+
+function renderArch(){
+  var wrap=document.getElementById('arch-inner');
+  wrap.innerHTML='';
+
+  // Header
+  var scounts={ex:0,pa:0,im:0};
+  Object.values(SMAP).forEach(v=>scounts[v]++);
+  var pills=[
+    h('span',{className:'arch-pill',style:{background:STATUS.ex.bg,color:STATUS.ex.txt}},scounts.ex+' Explícito'),
+    h('span',{className:'arch-pill',style:{background:STATUS.pa.bg,color:STATUS.pa.txt}},scounts.pa+' Parcialmente explícito'),
+    h('span',{className:'arch-pill',style:{background:STATUS.im.bg,color:STATUS.im.txt}},scounts.im+' Implícito / necesario'),
+  ];
+  wrap.appendChild(h('div',{className:'arch-header'},[
+    h('div',{style:{fontSize:'11px',fontWeight:'700',letterSpacing:'3px',color:'#E8C97A',textTransform:'uppercase'}},'Programa CRE · Crepes & Waffles'),
+    h('h1',{},'Arquitectura del Programa — v2'),
+    h('p',{},'5 Proyectos · 5 Fases · 5 Gates · Capa Transversal · Trazabilidad a beneficios'),
+    h('div',{className:'arch-pills'},pills)
+  ]));
+
+  // Tabs
+  var tabs=['matrix','transversal','benefits'];
+  var tabLabels={'matrix':'Matriz F×P','transversal':'Capa Transversal','benefits':'Beneficios'};
+  var tabEls=tabs.map(t=>h('button',{className:'arch-tab'+(t===activeTab?' on':''),onclick:()=>{activeTab=t;renderArch();}},tabLabels[t]));
+  wrap.appendChild(h('div',{className:'arch-tabs'},tabEls));
+
+  var body=h('div',{className:'arch-body'});
+  wrap.appendChild(body);
+
+  if(activeTab==='matrix') renderMatrix(body);
+  else if(activeTab==='transversal') renderTransversal(body);
+  else renderBenefits(body);
+
+  renderModal();
+  renderGateModal();
+}
+
+function renderMatrix(body){
+  // Filter controls
+  var filterBtns=['all','ex','pa','im'].map(f=>{
+    var lbl=f==='all'?'Todos':STATUS[f].lbl;
+    return h('button',{className:'filter-btn'+(f===activeFilter?' on':''),onclick:()=>{activeFilter=f;renderArch();}},lbl);
+  });
+  body.appendChild(h('div',{className:'matrix-controls'},[
+    h('p',{className:'matrix-hint'},'Clic en cualquier celda para ver entregables y trazabilidad · Los gates ◆ muestran el paquete de decisión'),
+    h('div',{className:'filter-row'},[h('span',{style:{fontSize:'11px',color:'#9A8A70',marginRight:'4px'}},'Filtrar:'),...filterBtns])
+  ]));
+
+  var wrap=h('div',{className:'matrix-wrap'});
+  var grid=h('div',{className:'matrix-grid'});
+  wrap.appendChild(grid);
+  body.appendChild(wrap);
+
+  // Phase header
+  var phRow=h('div',{className:'phase-header-row'},[h('div',{})]);
+  PHASES.forEach((ph,i)=>{
+    var bg='hsl('+(32+i*8)+','+(55+i*4)+'%,'+(88-i*2)+'%)';
+    phRow.appendChild(h('div',{className:'phase-hdr',style:{background:bg}},[
+      h('div',{className:'phase-hdr-id'},ph.id),
+      h('div',{className:'phase-hdr-name'},ph.name)
+    ]));
+  });
+  grid.appendChild(phRow);
+
+  // Project rows
+  PROJ.forEach(proj=>{
+    var row=h('div',{className:'proj-row'});
+    row.appendChild(h('div',{className:'proj-label',style:{borderLeft:'4px solid '+proj.color}},[
+      h('div',{className:'proj-id',style:{color:proj.color}},proj.id),
+      h('div',{className:'proj-name'},proj.name),
+      h('div',{className:'proj-lead'},proj.lead)
+    ]));
+    PHASES.forEach(ph=>{
+      var key=ph.id+'-'+proj.id;
+      var cell=MATRIX[key];
+      var st=SMAP[key]||'pa';
+      var stObj=STATUS[st];
+      var dim=activeFilter!=='all'&&activeFilter!==st;
+      var cellEl=h('div',{
+        className:'matrix-cell'+(dim?' dimmed':''),
+        style:{background:dim?'#F0EDE7':proj.light,border:'1px solid '+(dim?'#E0DAD0':proj.border)},
+        onclick:dim?null:()=>{openCell={key,ph,proj,cell,st};renderArch();}
+      },[
+        h('div',{className:'cell-objective',style:{color:dim?'#AAA':'#3D2B0A'}},cell?cell.obj:''),
+        h('div',{className:'cell-foot'},[
+          h('span',{className:'cell-count',style:{color:dim?'#CCC':'#7A6A50'}},cell?(cell.del.length+' entregables'):''),
+          h('span',{className:'status-badge',style:{background:dim?'#E0DAD0':stObj.bg,color:dim?'#AAA':stObj.txt}},(st==='ex'?'✓':st==='pa'?'~':'!')+' '+stObj.lbl.split(' ')[0])
+        ])
+      ]);
+      row.appendChild(cellEl);
+    });
+    grid.appendChild(row);
+  });
+
+  // Gates row
+  var gRow=h('div',{className:'gates-row'},[h('div',{className:'gates-label'},'Gates de decisión')]);
+  PHASES.forEach(ph=>{
+    var g=GATES[ph.id];
+    var btn=h('button',{className:'gate-btn',onclick:()=>{openGate=g;renderArch();}},g.id);
+    gRow.appendChild(h('div',{style:{display:'flex',justifyContent:'center'}},btn));
+  });
+  grid.appendChild(gRow);
+
+  // Legend
+  var legend=h('div',{className:'matrix-legend'});
+  PROJ.forEach(p=>{
+    legend.appendChild(h('div',{className:'legend-item'},[
+      h('div',{className:'legend-dot',style:{background:p.color}}),
+      p.id+' — '+p.name
+    ]));
+  });
+  body.appendChild(legend);
+}
+
+function renderTransversal(body){
+  var intro=h('p',{style:{fontSize:'13px',color:'#7A6A50',marginBottom:'18px'}},'Estos componentes corren durante F1–F5 y articulan los proyectos P1–P5. No los reemplazan; los gobiernan e integran.');
+  body.appendChild(intro);
+  var grid=h('div',{className:'trans-grid'});
+  TRANSVERSAL.forEach(t=>{
+    var st=STATUS[t.status];
+    var c=h('div',{className:'trans-card',style:{borderTop:'4px solid hsl('+t.hue+',55%,48%)'}});
+    c.appendChild(h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:'10px'}},[
+      h('div',{},[
+        h('span',{className:'trans-id',style:{color:'hsl('+t.hue+',55%,38%)'}},t.id),
+        h('div',{className:'trans-name'},t.name)
+      ]),
+      h('span',{style:{fontSize:'10px',background:st.bg,color:st.txt,padding:'3px 8px',borderRadius:'8px',fontWeight:'700',whiteSpace:'nowrap'}},st.lbl)
+    ]));
+    c.appendChild(h('div',{className:'trans-purpose'},t.purpose));
+    // deliverables
+    c.appendChild(h('div',{style:{fontSize:'10px',fontWeight:'700',color:'#9A8A70',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'5px'}},'Entregables'));
+    var dg=h('div',{className:'chip-group'});
+    t.del.forEach(d=>dg.appendChild(h('span',{className:'chip neutral'},d)));
+    c.appendChild(dg);
+    // instruments
+    c.appendChild(h('div',{style:{fontSize:'10px',fontWeight:'700',color:'#9A8A70',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'5px',marginTop:'8px'}},'Instrumentos / artefactos'));
+    var ig=h('div',{className:'chip-group'});
+    t.inst.forEach(d=>ig.appendChild(h('span',{className:'chip',style:{background:'hsl('+t.hue+',40%,94%)',color:'hsl('+t.hue+',55%,35%)'}},d)));
+    c.appendChild(ig);
+    c.appendChild(h('div',{className:'trans-footer'},[
+      h('span',{style:{color:'#7A6A50'}},'👤 '+t.lead),
+      h('span',{style:{color:'hsl('+t.hue+',55%,38%)',fontWeight:'600'}},'→ '+t.out)
+    ]));
+    grid.appendChild(c);
+  });
+  body.appendChild(grid);
+}
+
+function renderBenefits(body){
+  body.appendChild(h('p',{style:{fontSize:'13px',color:'#7A6A50',marginBottom:'18px'}},'Cada entregable debe instalar una capacidad y habilitar un beneficio medible.'));
+  var list=h('div',{className:'ben-list'});
+  BENEFITS.forEach((b,i)=>{
+    var card=h('div',{className:'ben-card',style:{borderLeft:'5px solid '+b.color}});
+    // Col 1
+    var col1=h('div',{});
+    col1.appendChild(h('div',{className:'ben-num',style:{color:b.color}},'Beneficio '+(i+1)));
+    col1.appendChild(h('div',{className:'ben-title'},b.ben));
+    var tags=h('div',{className:'ben-tags'});
+    tags.appendChild(h('span',{className:'ben-tag'},'📦 '+b.proj));
+    tags.appendChild(h('span',{className:'ben-tag'},'🕐 '+b.freq));
+    col1.appendChild(tags);
+    card.appendChild(col1);
+    // Col 2
+    var col2=h('div',{});
+    col2.appendChild(h('div',{className:'kpi-label'},'KPI / Métrica'));
+    col2.appendChild(h('div',{className:'kpi-val',style:{borderLeft:'3px solid '+b.color}},b.kpi));
+    col2.appendChild(h('div',{className:'kpi-label',style:{marginTop:'8px'}},'Entregables habilitadores'));
+    var dchips=h('div',{className:'del-chips'});
+    b.del.forEach(d=>dchips.appendChild(h('span',{className:'del-chip'},d)));
+    col2.appendChild(dchips);
+    card.appendChild(col2);
+    // Col 3
+    var col3=h('div',{});
+    col3.appendChild(h('div',{className:'kpi-label'},'Señal de outcome'));
+    col3.appendChild(h('div',{className:'signal-box',style:{background:b.color+'12'}},'"'+b.signal+'"'));
+    card.appendChild(col3);
+    list.appendChild(card);
+  });
+  body.appendChild(list);
+  // Chain
+  var chain=h('div',{className:'chain-box'});
+  chain.appendChild(h('div',{className:'chain-title'},'Cadena de trazabilidad estratégica'));
+  var steps=h('div',{className:'chain-steps'});
+  ['Problema','Causa raíz','Brecha','Entregable','Gate','Capability','Outcome','Beneficio'].forEach((s,i,arr)=>{
+    steps.appendChild(h('span',{className:'chain-step',style:{background:'hsl('+(30+i*12)+',50%,'+(93-i)+'%)',color:'hsl('+(30+i*12)+',60%,28%)'}},s));
+    if(i<arr.length-1) steps.appendChild(h('span',{className:'chain-arrow'},'→'));
+  });
+  chain.appendChild(steps);
+  body.appendChild(chain);
+}
+
+function renderModal(){
+  var ov=document.getElementById('modal-overlay');
+  var box=document.getElementById('modal-box');
+  ov.className='';
+  if(!openCell){ov.style.display='none';return;}
+  var {ph,proj,cell,st}=openCell;
+  var stObj=STATUS[st];
+  ov.style.display='flex';
+  box.innerHTML='';
+  // Top
+  var top=h('div',{className:'modal-top'});
+  top.appendChild(h('div',{},[
+    h('div',{className:'modal-phase-proj',style:{color:proj.color}},ph.id+' · '+proj.id),
+    h('div',{className:'modal-proj-name'},proj.name),
+    h('div',{className:'modal-phase-name'},ph.name)
+  ]));
+  var right=h('div',{style:{display:'flex',alignItems:'center',gap:'8px'}});
+  right.appendChild(h('span',{style:{fontSize:'10px',background:stObj.bg,color:stObj.txt,padding:'3px 9px',borderRadius:'8px',fontWeight:'700'}},stObj.lbl));
+  right.appendChild(h('button',{className:'modal-close',onclick:()=>{openCell=null;renderArch();}},'✕'));
+  top.appendChild(right);
+  box.appendChild(top);
+  // Objective
+  var obj=h('div',{className:'modal-obj',style:{background:proj.light,borderLeft:'3px solid '+proj.color}});
+  obj.appendChild(h('div',{className:'modal-obj-label',style:{color:proj.color}},'Objetivo'));
+  obj.appendChild(h('div',{className:'modal-obj-text'},cell?cell.obj:''));
+  box.appendChild(obj);
+  // Deliverables
+  box.appendChild(h('div',{className:'del-section-label'},'Entregables críticos ('+(cell?cell.del.length:0)+')'));
+  var dlist=h('div',{className:'del-list'});
+  if(cell) cell.del.forEach(d=>dlist.appendChild(h('div',{className:'del-item'},[h('span',{className:'del-dot',style:{color:proj.color}},'◆'),d])));
+  box.appendChild(dlist);
+  // Meta grid
+  var meta=[['Mecanismo de transición',cell?cell.mec:'','#EFF6FF','#1E40AF'],['Capability instalada',cell?cell.cap:'','#ECFDF5','#065F46'],['Outcome esperado',cell?cell.out:'','#FEF3C7','#92400E'],['Beneficio habilitado',cell?cell.ben:'','#FDF4FF','#7E22CE']];
+  var mg=h('div',{className:'meta-grid2'});
+  meta.forEach(([lbl,val,bg,clr])=>{
+    var mb=h('div',{className:'meta-box',style:{background:bg}});
+    mb.appendChild(h('div',{className:'meta-box-label',style:{color:clr}},lbl));
+    mb.appendChild(h('div',{className:'meta-box-val'},val));
+    mg.appendChild(mb);
+  });
+  box.appendChild(mg);
+  box.appendChild(h('div',{className:'modal-gate-ref'},'Gate de referencia: '+GATES[ph.id].id));
+}
+
+function renderGateModal(){
+  var ov=document.getElementById('gate-overlay');
+  var box=document.getElementById('gate-box');
+  if(!openGate){ov.style.display='none';return;}
+  ov.style.display='flex';
+  box.innerHTML='';
+  var g=openGate;
+  var top=h('div',{style:{display:'flex',justifyContent:'space-between',marginBottom:'18px'}});
+  top.appendChild(h('div',{},[
+    h('div',{style:{fontSize:'11px',fontWeight:'700',letterSpacing:'3px',color:'#B5620A',textTransform:'uppercase'}},'Gate de decisión'),
+    h('div',{style:{fontFamily:'Playfair Display,serif',fontSize:'28px',fontWeight:'700',color:'#3D2B0A'}},g.id)
+  ]));
+  top.appendChild(h('button',{style:{background:'#F0EDE7',border:'none',borderRadius:'50%',width:'30px',height:'30px',cursor:'pointer',color:'#7A6A50',fontSize:'15px'},onclick:()=>{openGate=null;renderArch();}},'✕'));
+  box.appendChild(top);
+  var dec=h('div',{style:{background:'#FDF6E8',borderRadius:'8px',padding:'12px 14px',borderLeft:'3px solid #B5620A',marginBottom:'12px'}});
+  dec.appendChild(h('div',{style:{fontSize:'10px',fontWeight:'700',color:'#B5620A',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'4px'}},'Decisión'));
+  dec.appendChild(h('div',{style:{fontSize:'14px',color:'#3D2B0A',fontWeight:'700'}},g.decision));
+  box.appendChild(dec);
+  var evLbl=h('div',{style:{fontSize:'10px',fontWeight:'700',color:'#9A8A70',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'6px'}},'Evidencia mínima requerida');
+  box.appendChild(evLbl);
+  var evList=h('div',{style:{display:'flex',flexDirection:'column',gap:'4px',marginBottom:'12px'}});
+  g.evidence.forEach(e=>evList.appendChild(h('div',{style:{display:'flex',gap:'7px',fontSize:'12px',color:'#3D2B0A'}},[h('span',{style:{color:'#B5620A'}},'◆'),e])));
+  box.appendChild(evList);
+  var bg=h('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}});
+  var b1=h('div',{style:{background:'#F0EDE7',borderRadius:'8px',padding:'10px 12px'}});
+  b1.appendChild(h('div',{style:{fontSize:'9px',fontWeight:'700',color:'#7A6A50',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'3px'}},'Responsable'));
+  b1.appendChild(h('div',{style:{fontSize:'12px',color:'#3D2B0A',fontWeight:'600'}},g.responsible));
+  var b2=h('div',{style:{background:'#ECFDF5',borderRadius:'8px',padding:'10px 12px'}});
+  b2.appendChild(h('div',{style:{fontSize:'9px',fontWeight:'700',color:'#065F46',textTransform:'uppercase',letterSpacing:'1px',marginBottom:'3px'}},'Resultado esperado'));
+  b2.appendChild(h('div',{style:{fontSize:'12px',color:'#065F46',fontWeight:'600',lineHeight:'1.4'}},g.result));
+  bg.appendChild(b1);bg.appendChild(b2);
+  box.appendChild(bg);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  renderArch();
+});
+
+
+function showSection(s) {
+  document.getElementById('bc-section').style.display  = s==='bc'  ? 'flex'  : 'none';
+  document.getElementById('arch-section').style.display = s==='arch' ? 'block' : 'none';
+  document.querySelectorAll('.nav-tab').forEach(function(t,i){
+    t.classList.toggle('active',(s==='bc'&&i===0)||(s==='arch'&&i===1));
+  });
+  window.scrollTo(0,0);
+}
+
+function scrollToSlide(n) {
+  var el = document.getElementById('slide-'+n);
+  if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+var obs = new IntersectionObserver(function(entries){
+  entries.forEach(function(e){
+    if(e.isIntersecting){
+      var n=e.target.id.split('-')[1];
+      document.querySelectorAll('.sidebar-item').forEach(function(i){i.classList.remove('active');});
+      var nav=document.getElementById('nav-'+n);
+      if(nav) nav.classList.add('active');
+    }
+  });
+},{rootMargin:'-15% 0px -70% 0px',threshold:0});
+document.querySelectorAll('.bc-slide').forEach(function(s){obs.observe(s);});
+</script>
+</body>
+</html>
