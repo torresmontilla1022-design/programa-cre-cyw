@@ -195,6 +195,145 @@ tr:last-child td{border-bottom:none}tr:nth-child(even) td{background:var(--cream
 .meta-box-val{font-size:11px;font-weight:600;line-height:1.4;color:#2C2416}
 .modal-gate-ref{margin-top:12px;font-size:11px;color:#9A8A70}
 @media(max-width:900px){#bc-sidebar{display:none}#bc-content{padding:20px 18px 60px}.mg,.sr,.g2,.g3,.feas{grid-template-columns:1fr 1fr}.igrid{grid-template-columns:1fr}.ben-card{grid-template-columns:1fr}}
+
+/* ── DEP MAP v5 — no SVG, pure CSS diagram ── */
+.dcell { transition: opacity .2s, box-shadow .2s; cursor: pointer; position: relative; }
+.dcell.d-idle    { opacity: 0.12; filter: grayscale(0.5); }
+.dcell.d-origin  { opacity:1!important; box-shadow:0 0 0 2px #C8102E, 0 4px 12px rgba(200,16,46,.14)!important; }
+.dcell.d-enables { opacity:1!important; box-shadow:0 0 0 2px #2E8B6A, 0 3px 10px rgba(46,139,106,.12)!important; background:#F2FBF7!important; }
+.dcell.d-depends { opacity:1!important; box-shadow:0 0 0 2px #2563A8, 0 3px 10px rgba(37,99,168,.11)!important; background:#F0F6FF!important; }
+.dcell.d-crit    { opacity:1!important; }
+.dcell.d-normal  { opacity:1; }
+/* Badge in footer */
+.dep-badge { font-size:9px; font-weight:800; border-radius:4px; padding:2px 6px;
+  letter-spacing:.3px; white-space:nowrap; }
+.dep-badge.bo { background:#C8102E; color:#fff; }
+.dep-badge.be { background:#2E8B6A; color:#fff; }
+.dep-badge.bd { background:#2563A8; color:#fff; }
+.dep-badge.br { background:#7A5820; color:#fff; }
+
+/* ── Dependency diagram panel ── */
+.dep-panel-v5 {
+  background:#fff; border-radius:14px; padding:0;
+  box-shadow:0 4px 20px rgba(0,0,0,.08); margin-top:16px;
+  overflow:hidden; animation: dpIn .2s ease;
+}
+@keyframes dpIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+/* Panel header */
+.dp5-header {
+  padding:16px 20px 12px;
+  border-bottom:1px solid #F0EDE7;
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+}
+.dp5-cell-info { display:flex; align-items:center; gap:10px; }
+.dp5-key { font-size:12px; font-weight:800; letter-spacing:2px; text-transform:uppercase;
+  padding:4px 10px; border-radius:6px; color:#fff; }
+.dp5-meta { }
+.dp5-proj { font-family:'Playfair Display',serif; font-size:15px; font-weight:700; color:#2C2416; }
+.dp5-phase { font-size:11px; color:#9A8A70; margin-top:1px; }
+.dp5-obj { font-size:12px; color:#7A6A50; font-style:italic; max-width:380px; line-height:1.45; }
+
+/* Count pills */
+.dp5-counts { display:flex; gap:6px; flex-shrink:0; }
+.dp5-count { font-size:10px; font-weight:700; padding:3px 10px; border-radius:12px; }
+
+/* Diagram area */
+.dp5-diagram {
+  display:grid; grid-template-columns:1fr 60px 200px 60px 1fr;
+  align-items:center; gap:0; padding:20px 16px; min-height:120px;
+  background:#FAFAF8;
+}
+
+/* Arrow connectors */
+.dp5-arrow-col {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:0; align-self:stretch;
+}
+.dp5-arrow-line {
+  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  min-height:32px;
+}
+.dp5-arrow-svg { width:52px; height:20px; flex-shrink:0; }
+
+/* Side lists */
+.dp5-side { display:flex; flex-direction:column; gap:6px; }
+.dp5-side.right { align-items:flex-start; }
+.dp5-side.left  { align-items:flex-end; }
+
+/* Mini cell cards */
+.dp5-card {
+  border-radius:8px; padding:8px 10px; font-size:11px; font-weight:600;
+  color:#2C2416; line-height:1.35; max-width:180px;
+  border:1px solid transparent; transition: box-shadow .15s;
+  cursor: pointer;
+}
+.dp5-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+.dp5-card .dp5-card-key { font-size:9px; font-weight:800; letter-spacing:1.5px;
+  text-transform:uppercase; margin-bottom:3px; }
+.dp5-card .dp5-card-lbl { font-size:11px; color:#5A4A30; line-height:1.3; }
+.dp5-card.type-crit { border-color:#FECACA; background:#FEF2F2; }
+.dp5-card.type-high { border-color:#BFDBFE; background:#EFF6FF; }
+.dp5-card.type-med  { border-color:#E5E7EB; background:#F9FAFB; }
+
+/* Origin cell (center) */
+.dp5-origin-card {
+  border-radius:10px; padding:12px 14px; background:#fff;
+  border:2.5px solid #C8102E; box-shadow:0 4px 16px rgba(200,16,46,.12);
+  text-align:center; min-width:160px;
+}
+.dp5-origin-card .dp5-ok { font-size:10px; font-weight:800; letter-spacing:2px;
+  text-transform:uppercase; color:#C8102E; margin-bottom:4px; }
+.dp5-origin-card .dp5-on { font-family:'Playfair Display',serif; font-size:14px;
+  font-weight:700; color:#2C2416; line-height:1.35; }
+.dp5-origin-card .dp5-op { font-size:10px; color:#9A8A70; margin-top:3px; }
+
+/* Empty state */
+.dp5-empty { font-size:13px; color:#9A8A70; font-style:italic; text-align:center; padding:20px; }
+
+/* Type tag */
+.dp5-tag { font-size:9px; font-weight:800; border-radius:4px; padding:1px 5px; margin-top:3px;
+  display:inline-block; }
+.dp5-tag.tc { background:#FDECED; color:#9E0C24; }
+.dp5-tag.th { background:#DBEAFE; color:#1E40AF; }
+.dp5-tag.tm { background:#F0EDE7; color:#7A6A50; }
+
+/* Crit path panel */
+.dp5-cp-panel {
+  background:#fff; border-radius:14px; padding:20px 22px;
+  box-shadow:0 4px 20px rgba(0,0,0,.08); margin-top:16px;
+  animation: dpIn .2s ease;
+}
+.cp-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+.cp-btn { padding:6px 14px; border-radius:20px; border:1.5px solid #D4C9B4;
+  font-size:12px; font-weight:700; cursor:pointer; font-family:inherit;
+  background:#fff; color:#7A6A50; transition:all .18s;
+  display:flex; align-items:center; gap:6px; }
+.cp-btn.on { color:#fff; }
+.cp-sw { width:9px; height:9px; border-radius:50%; }
+
+/* Horizontal chain for crit paths */
+.cp-chain {
+  display:flex; align-items:center; gap:0; flex-wrap:nowrap;
+  overflow-x:auto; padding:4px 0 8px;
+}
+.cp-chain-node {
+  flex-shrink:0; padding:8px 14px; border-radius:20px;
+  font-size:12px; font-weight:700; border:1.5px solid;
+  background:#fff; white-space:nowrap;
+}
+.cp-chain-arrow {
+  flex-shrink:0; padding:0 4px; font-size:18px; font-weight:700; opacity:0.5;
+}
+.cp-chain-desc { font-size:12px; color:#7A6A50; font-style:italic; margin-bottom:12px; }
+.cp-chain-title { font-size:10px; font-weight:800; letter-spacing:2px;
+  text-transform:uppercase; margin-bottom:6px; }
+
+.dep-hint { font-size:12px; color:#9A8A70; margin-bottom:10px;
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.dep-chip { font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px;
+  display:inline-flex; align-items:center; gap:3px; }
+
 </style>
 </head>
 <body>
@@ -548,6 +687,58 @@ const BENEFITS=[{ben:"Reducir variabilidad operativa",kpi:"% de estándares crí
 
 let activeTab='matrix', activeFilter='all', openCell=null, openGate=null;
 
+const DEPS=[
+  {from:'F1-P1',to:'F2-P1',type:'critical',label:'Baseline y KPIs habilitan metas refinadas y umbrales'},
+  {from:'F2-P1',to:'F3-P1',type:'high',label:'Metas refinadas alimentan scorecard del programa'},
+  {from:'F3-P1',to:'F4-P1',type:'high',label:'Scorecard habilita readiness de beneficios'},
+  {from:'F4-P1',to:'F5-P1',type:'high',label:'Readiness habilita cierre estrategico y decision ejecutiva'},
+  {from:'F1-P2',to:'F2-P2',type:'critical',label:'Diagnostico SGI habilita manual minimo v1 y checklist'},
+  {from:'F2-P2',to:'F3-P2',type:'critical',label:'Manual v1 habilita manual v2 con responsables y auditoria'},
+  {from:'F3-P2',to:'F4-P2',type:'high',label:'Manual v2 habilita material pedagogico y despliegue'},
+  {from:'F4-P2',to:'F5-P2',type:'high',label:'Despliegue habilita ajuste final del estandar con evidencia'},
+  {from:'F1-P3',to:'F2-P3',type:'critical',label:'Mapa de decisiones habilita borrador MAD y gobernanza'},
+  {from:'F2-P3',to:'F3-P3',type:'critical',label:'Borrador MAD habilita MAD v1 aprobado y gobernanza'},
+  {from:'F3-P3',to:'F4-P3',type:'critical',label:'MAD v1 habilita puesta en uso del modelo de decision'},
+  {from:'F4-P3',to:'F5-P3',type:'high',label:'Gobernanza en uso habilita validacion y ajuste fino'},
+  {from:'F1-P4',to:'F2-P4',type:'high',label:'Diagnostico de impactos habilita plan de cambio v1'},
+  {from:'F2-P4',to:'F3-P4',type:'high',label:'Plan cambio v1 habilita plan v2 con formacion detallada'},
+  {from:'F3-P4',to:'F4-P4',type:'critical',label:'Plan formacion y toolkit habilitan ejecucion de adopcion'},
+  {from:'F4-P4',to:'F5-P4',type:'high',label:'Adopcion ejecutada habilita verificacion de sostenibilidad'},
+  {from:'F1-P5',to:'F2-P5',type:'high',label:'Diseno conceptual habilita plan preliminar y KPIs'},
+  {from:'F2-P5',to:'F3-P5',type:'high',label:'Plan preliminar habilita plan detallado con RACI'},
+  {from:'F3-P5',to:'F4-P5',type:'critical',label:'Plan detallado habilita readiness y movilizacion de sede'},
+  {from:'F4-P5',to:'F5-P5',type:'critical',label:'Acta de readiness habilita ejecucion del piloto'},
+  {from:'F1-P1',to:'F2-P2',type:'critical',label:'Principios no negociables y brechas habilitan diseno del estandar minimo'},
+  {from:'F1-P1',to:'F2-P3',type:'high',label:'Brechas de capacidad habilitan diseno de gobernanza y MAD'},
+  {from:'F1-P2',to:'F2-P2',type:'high',label:'Inventario SGI y vacios habilitan base documental para manual v1'},
+  {from:'F2-P1',to:'F5-P5',type:'critical',label:'Baseline validada y KPIs habilitan medicion del piloto vs baseline'},
+  {from:'F2-P2',to:'F3-P3',type:'critical',label:'Manual minimo v1 le dice a gobernanza que controlar y auditar'},
+  {from:'F2-P3',to:'F3-P3',type:'critical',label:'Borrador MAD habilita formalizacion de MAD v1 y gates'},
+  {from:'F3-P3',to:'F4-P4',type:'critical',label:'MAD v1 y nuevas reglas habilitan adopcion del modelo de decision'},
+  {from:'F3-P2',to:'F3-P5',type:'high',label:'Manual v2 y paquete documental habilitan plan detallado del piloto'},
+  {from:'F3-P3',to:'F3-P5',type:'critical',label:'MAD + gates + RACI permiten que piloto opere bajo reglas explicitas'},
+  {from:'F3-P4',to:'F4-P4',type:'high',label:'Plan formacion detallado habilita formacion a lideres de sede'},
+  {from:'F4-P2',to:'F4-P4',type:'high',label:'Estandar entrenable habilita adopcion operativa en sede'},
+  {from:'F4-P3',to:'F4-P4',type:'medium',label:'MAD en uso habilita adopcion del modelo de gobierno'},
+  {from:'F4-P4',to:'F5-P5',type:'critical',label:'Formacion + sponsorship + readiness habilitan el piloto'},
+  {from:'F5-P5',to:'F5-P1',type:'critical',label:'Resultados del piloto habilitan decision ejecutiva de continuidad'},
+  {from:'F5-P5',to:'F5-P2',type:'high',label:'Evidencia del piloto habilita ajuste y cierre del estandar'},
+  {from:'F5-P5',to:'F5-P3',type:'high',label:'Excepciones reales habilitan ajuste fino de MAD y gobernanza'},
+  {from:'F5-P5',to:'F5-P4',type:'high',label:'Piloto ejecutado habilita verificacion de adopcion y sostenibilidad'},
+];
+function getDepsForCell(k){
+  return{enables:DEPS.filter(function(d){return d.from===k;}),
+         dependsOn:DEPS.filter(function(d){return d.to===k;})};
+}
+const CRIT_PATHS=[
+  {id:'cp1',label:'Ruta estructural',color:'#C8102E',keys:['F1-P1','F2-P2','F3-P3','F4-P4','F5-P5'],desc:'Baseline -> Estandar -> Gobernanza -> Adopcion -> Piloto'},
+  {id:'cp2',label:'Ruta de gobernanza',color:'#2563A8',keys:['F1-P3','F2-P3','F3-P3','F4-P3','F5-P3'],desc:'Mapa decisiones -> Borrador MAD -> MAD v1 -> Uso real -> Validacion'},
+  {id:'cp3',label:'Ruta de adopcion',color:'#2E8B6A',keys:['F1-P4','F2-P4','F3-P4','F4-P4','F5-P4'],desc:'Impactos -> Plan cambio -> Formacion -> Ejecucion -> Sostenibilidad'},
+  {id:'cp4',label:'Ruta de evidencia',color:'#C27A0A',keys:['F1-P1','F2-P1','F3-P1','F4-P1','F5-P1','F5-P5'],desc:'Baseline -> Metas -> Scorecard -> Readiness -> Resultados -> Decision'},
+];
+let activeDepCell=null,showCritPath=false,activeCritPath=null;
+
+
 function h(tag,attrs,children){
   var el=document.createElement(tag);
   if(attrs) Object.keys(attrs).forEach(k=>{
@@ -583,8 +774,8 @@ function renderArch(){
   ]));
 
   // Tabs
-  var tabs=['matrix','transversal','benefits'];
-  var tabLabels={'matrix':'Matriz F×P','transversal':'Capa Transversal','benefits':'Beneficios'};
+  var tabs=['matrix','transversal','benefits','deps'];
+  var tabLabels={'matrix':'Matriz F×P','transversal':'Capa Transversal','benefits':'Beneficios','deps':'Dependencias'};
   var tabEls=tabs.map(t=>h('button',{className:'arch-tab'+(t===activeTab?' on':''),onclick:()=>{activeTab=t;renderArch();}},tabLabels[t]));
   wrap.appendChild(h('div',{className:'arch-tabs'},tabEls));
 
@@ -593,6 +784,7 @@ function renderArch(){
 
   if(activeTab==='matrix') renderMatrix(body);
   else if(activeTab==='transversal') renderTransversal(body);
+  else if(activeTab==='deps') renderDeps(body);
   else renderBenefits(body);
 
   renderModal();
@@ -835,6 +1027,286 @@ document.addEventListener('DOMContentLoaded', function() {
   renderArch();
 });
 
+
+
+// Helper: get short label for a cell key
+function cellShortLabel(key) {
+  var cell = MATRIX[key];
+  if (!cell) return key;
+  var words = cell.obj.split(' ');
+  return words.slice(0,5).join(' ') + (words.length > 5 ? '...' : '');
+}
+function projName(key) {
+  var pid = key.split('-')[1];
+  var p = PROJ.find(function(p){return p.id===pid;});
+  return p ? p.name : pid;
+}
+function projColor(key) {
+  var pid = key.split('-')[1];
+  var p = PROJ.find(function(p){return p.id===pid;});
+  return p ? p.color : '#888';
+}
+function projLight(key) {
+  var pid = key.split('-')[1];
+  var p = PROJ.find(function(p){return p.id===pid;});
+  return p ? p.light : '#F7F4EF';
+}
+function projBorder(key) {
+  var pid = key.split('-')[1];
+  var p = PROJ.find(function(p){return p.id===pid;});
+  return p ? p.border : '#E0DAD0';
+}
+
+function arrowSvg(color, dir) {
+  // dir: 'right' or 'left'
+  var pts = dir==='right' ? '2,10 42,10 36,4 42,10 36,16' : '50,10 10,10 16,4 10,10 16,16';
+  return '<svg class="dp5-arrow-svg" viewBox="0 0 52 20" fill="none" xmlns="http://www.w3.org/2000/svg">'
+    + '<polyline points="'+pts+'" stroke="'+color+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>'
+    + '</svg>';
+}
+
+function renderDeps(body){
+  // Controls
+  var bar=h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'10px',flexWrap:'wrap',gap:'8px'}});
+  bar.appendChild(h('div',{className:'dep-hint'},[
+    'Clic en una celda para ver sus conexiones \u2022 ',
+    h('span',{className:'dep-chip',style:{background:'#FDECED',color:'#C8102E'}},'\u25cf Origen'),
+    h('span',{className:'dep-chip',style:{background:'#ECFDF5',color:'#2E8B6A'}},'\u25cf Habilita'),
+    h('span',{className:'dep-chip',style:{background:'#EFF6FF',color:'#2563A8'}},'\u25cf Depende de'),
+  ]));
+  var bg=h('div',{style:{display:'flex',gap:'8px'}});
+  bg.appendChild(h('button',{
+    style:{padding:'6px 14px',borderRadius:'8px',border:'1px solid '+(showCritPath?'#C8102E':'#D4C9B4'),
+      background:showCritPath?'#FDECED':'#fff',color:showCritPath?'#9E0C24':'#7A6A50',
+      fontFamily:'inherit',fontSize:'12px',fontWeight:'700',cursor:'pointer'},
+    onclick:function(){showCritPath=!showCritPath;activeDepCell=null;activeCritPath=null;renderArch();}
+  },showCritPath?'\u2715 Cerrar rutas':'\u29c6 Rutas criticas'));
+  if(activeDepCell&&!showCritPath){
+    bg.appendChild(h('button',{
+      style:{padding:'6px 12px',borderRadius:'8px',border:'1px solid #D4C9B4',background:'#fff',
+        color:'#7A6A50',fontFamily:'inherit',fontSize:'12px',fontWeight:'600',cursor:'pointer'},
+      onclick:function(){activeDepCell=null;renderArch();}
+    },'Limpiar'));
+  }
+  bar.appendChild(bg); body.appendChild(bar);
+
+  if(showCritPath){
+    var cpBar=h('div',{className:'cp-bar'});
+    CRIT_PATHS.forEach(function(cp){
+      var on=activeCritPath===cp.id;
+      cpBar.appendChild(h('button',{
+        className:'cp-btn'+(on?' on':''),
+        style:{background:on?cp.color:'#fff',borderColor:on?cp.color:'#D4C9B4',color:on?'#fff':'#7A6A50'},
+        onclick:function(){activeCritPath=on?null:cp.id;renderArch();}
+      },[h('span',{className:'cp-sw',style:{background:cp.color}}),cp.label]));
+    });
+    body.appendChild(cpBar);
+  }
+
+  // Matrix
+  var mWrap=h('div',{className:'matrix-wrap'});
+  var grid=h('div',{className:'matrix-grid',id:'dep-grid'});
+  mWrap.appendChild(grid); body.appendChild(mWrap);
+
+  // Compute active sets
+  var selDeps=activeDepCell?getDepsForCell(activeDepCell):null;
+  var enabKeys=selDeps?selDeps.enables.map(function(d){return d.to;})  :[];
+  var depKeys= selDeps?selDeps.dependsOn.map(function(d){return d.from;}):[];
+  var critKeyMap={};
+  if(showCritPath){
+    var aPaths=activeCritPath?CRIT_PATHS.filter(function(c){return c.id===activeCritPath;}):CRIT_PATHS;
+    aPaths.forEach(function(cp){cp.keys.forEach(function(k){critKeyMap[k]=(critKeyMap[k]||[]).concat(cp.color);});});
+  }
+  var hasSel=activeDepCell!==null||showCritPath;
+
+  // Phase headers
+  var phRow=h('div',{className:'phase-header-row'},[h('div',{})]);
+  PHASES.forEach(function(ph,i){
+    phRow.appendChild(h('div',{className:'phase-hdr',style:{background:'hsl('+(32+i*8)+','+(55+i*4)+'%,'+(88-i*2)+'%)'}},[
+      h('div',{className:'phase-hdr-id'},ph.id),h('div',{className:'phase-hdr-name'},ph.name)
+    ]));
+  });
+  grid.appendChild(phRow);
+
+  PROJ.forEach(function(proj){
+    var row=h('div',{className:'proj-row'});
+    row.appendChild(h('div',{className:'proj-label',style:{borderLeft:'4px solid '+proj.color}},[
+      h('div',{className:'proj-id',style:{color:proj.color}},proj.id),
+      h('div',{className:'proj-name'},proj.name)
+    ]));
+    PHASES.forEach(function(ph){
+      var key=ph.id+'-'+proj.id;
+      var cell=MATRIX[key];
+      var st=SMAP[key]||'pa';
+      var stObj=STATUS[st];
+      var ds='d-normal', badgeLbl='', badgeCls='';
+      if(activeDepCell===key){ds='d-origin';badgeLbl='ORIGEN';badgeCls='bo';}
+      else if(enabKeys.indexOf(key)>-1){ds='d-enables';badgeLbl='HABILITA';badgeCls='be';}
+      else if(depKeys.indexOf(key)>-1){ds='d-depends';badgeLbl='DEPENDE DE';badgeCls='bd';}
+      else if(showCritPath&&critKeyMap[key]){ds='d-crit';badgeLbl='EN RUTA';badgeCls='br';}
+      else if(hasSel){ds='d-idle';}
+      var bord=hasSel&&ds==='d-crit'?'2px solid '+(critKeyMap[key]?critKeyMap[key][0]:'#ccc'):'1px solid '+proj.border;
+      var footKids=[h('span',{className:'cell-count',style:{fontSize:'9px',color:'#7A6A50'}},cell?(cell.del.length+' ent.'):'')];
+      if(badgeLbl) footKids.push(h('span',{className:'dep-badge '+badgeCls},badgeLbl));
+      else footKids.push(h('span',{className:'status-badge',style:{background:stObj.bg,color:stObj.txt,fontSize:'9px',padding:'2px 6px',borderRadius:'6px',fontWeight:'700'}},(st==='ex'?'\u2713':st==='pa'?'~':'!')+' '+stObj.lbl.split(' ')[0]));
+      var cellEl=h('div',{
+        className:'dcell matrix-cell '+ds,
+        style:{background:proj.light,border:bord,minHeight:'88px',display:'flex',flexDirection:'column',justifyContent:'space-between',padding:'9px'},
+        'data-depkey':key,
+        onclick:function(){if(!showCritPath){activeDepCell=activeDepCell===key?null:key;renderArch();}}
+      },[h('div',{style:{fontSize:'10px',color:'#3D2B0A',lineHeight:'1.4',fontWeight:'600',flex:'1'}},cell?cell.obj:''),h('div',{className:'cell-foot'},footKids)]);
+      row.appendChild(cellEl);
+    });
+    grid.appendChild(row);
+  });
+
+  var gRow=h('div',{className:'gates-row'},[h('div',{className:'gates-label'},'Gates')]);
+  PHASES.forEach(function(ph){
+    gRow.appendChild(h('div',{style:{display:'flex',justifyContent:'center'}},
+      h('button',{className:'gate-btn',onclick:function(){openGate=GATES[ph.id];renderArch();}},GATES[ph.id].id)
+    ));
+  });
+  grid.appendChild(gRow);
+
+  // Legend
+  var leg=h('div',{className:'matrix-legend',style:{marginTop:'14px'}});
+  [['Origen','#C8102E'],['Habilita','#2E8B6A'],['Depende de','#2563A8']].forEach(function(it){
+    leg.appendChild(h('div',{className:'legend-item'},[
+      h('div',{style:{width:'12px',height:'12px',borderRadius:'3px',border:'2px solid '+it[1],flexShrink:0,background:it[1]+'15'}}),it[0]
+    ]));
+  });
+  PROJ.forEach(function(p){
+    leg.appendChild(h('div',{className:'legend-item'},[h('div',{className:'legend-dot',style:{background:p.color}}),p.id+' \u2013 '+p.name]));
+  });
+  body.appendChild(leg);
+
+  // ── DEPENDENCY DIAGRAM PANEL (pure CSS, no SVG arrows) ──
+  if(activeDepCell&&!showCritPath){
+    var info=getDepsForCell(activeDepCell);
+    var pj=PROJ.find(function(p){return activeDepCell.split('-')[1]===p.id;});
+    var phN=PHASES.find(function(p){return activeDepCell.split('-')[0]===p.id;});
+    var cd=MATRIX[activeDepCell];
+
+    var panel=h('div',{className:'dep-panel-v5'});
+
+    // Header
+    var hd=h('div',{className:'dp5-header'});
+    hd.appendChild(h('div',{className:'dp5-cell-info'},[
+      h('span',{className:'dp5-key',style:{background:pj?pj.color:'#888'}},activeDepCell),
+      h('div',{className:'dp5-meta'},[
+        h('div',{className:'dp5-proj'},pj?pj.name:''),
+        h('div',{className:'dp5-phase'},phN?phN.name:''),
+      ])
+    ]));
+    hd.appendChild(h('div',{className:'dp5-obj'},cd?cd.obj:''));
+    hd.appendChild(h('div',{className:'dp5-counts'},[
+      h('span',{className:'dp5-count',style:{background:'#DBEAFE',color:'#1E40AF'}},'Depende de: '+info.dependsOn.length),
+      h('span',{className:'dp5-count',style:{background:'#D1FAE5',color:'#065F46'}},'Habilita: '+info.enables.length),
+    ]));
+    panel.appendChild(hd);
+
+    // Diagram body: [depends-on] → [ORIGIN] → [enables]
+    var maxRows = Math.max(info.dependsOn.length, info.enables.length, 1);
+    var diag = h('div',{style:{
+      display:'flex', alignItems:'stretch', gap:'0',
+      padding:'20px 16px', background:'#FAFAF8', minHeight:'100px'
+    }});
+
+    // LEFT column: "depende de"
+    var leftCol = h('div',{style:{flex:'1',display:'flex',flexDirection:'column',gap:'8px',justifyContent:'center',alignItems:'flex-end'}});
+    if(info.dependsOn.length===0){
+      leftCol.appendChild(h('div',{style:{fontSize:'11px',color:'#C9B990',fontStyle:'italic',textAlign:'right',paddingRight:'8px'}},'Sin dependencias\nde entrada'));
+    } else {
+      info.dependsOn.forEach(function(d){
+        var tc=d.type==='critical'?'type-crit':d.type==='high'?'type-high':'type-med';
+        var col=projColor(d.from);
+        var card=h('div',{className:'dp5-card '+tc,
+          style:{borderColor:col+'55',background:col+'0D',cursor:'pointer'},
+          onclick:function(){activeDepCell=d.from;renderArch();}
+        },[
+          h('div',{className:'dp5-card-key',style:{color:col}},d.from),
+          h('div',{className:'dp5-card-lbl'},cellShortLabel(d.from)),
+          h('span',{className:'dp5-tag '+(d.type==='critical'?'tc':d.type==='high'?'th':'tm')},
+            d.type==='critical'?'Critica':d.type==='high'?'Alta':'Media')
+        ]);
+        leftCol.appendChild(card);
+      });
+    }
+    diag.appendChild(leftCol);
+
+    // Arrow: depends → origin
+    var arrLeft = h('div',{style:{display:'flex',alignItems:'center',padding:'0 4px',flexShrink:0}});
+    arrLeft.innerHTML = arrowSvg('#2563A8','right');
+    diag.appendChild(arrLeft);
+
+    // CENTER: origin
+    var center = h('div',{style:{display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,padding:'0 4px'}});
+    var oc = h('div',{className:'dp5-origin-card'});
+    oc.appendChild(h('div',{className:'dp5-ok'},'ORIGEN'));
+    oc.appendChild(h('div',{className:'dp5-on'},pj?pj.name:''));
+    oc.appendChild(h('div',{className:'dp5-op'},phN?phN.name:''));
+    center.appendChild(oc);
+    diag.appendChild(center);
+
+    // Arrow: origin → enables
+    var arrRight = h('div',{style:{display:'flex',alignItems:'center',padding:'0 4px',flexShrink:0}});
+    arrRight.innerHTML = arrowSvg('#C8102E','right');
+    diag.appendChild(arrRight);
+
+    // RIGHT column: "habilita"
+    var rightCol = h('div',{style:{flex:'1',display:'flex',flexDirection:'column',gap:'8px',justifyContent:'center',alignItems:'flex-start'}});
+    if(info.enables.length===0){
+      rightCol.appendChild(h('div',{style:{fontSize:'11px',color:'#C9B990',fontStyle:'italic',paddingLeft:'8px'}},'Sin salidas\ndirectas'));
+    } else {
+      info.enables.forEach(function(d){
+        var tc=d.type==='critical'?'type-crit':d.type==='high'?'type-high':'type-med';
+        var col=projColor(d.to);
+        var card=h('div',{className:'dp5-card '+tc,
+          style:{borderColor:col+'55',background:col+'0D',cursor:'pointer'},
+          onclick:function(){activeDepCell=d.to;renderArch();}
+        },[
+          h('div',{className:'dp5-card-key',style:{color:col}},d.to),
+          h('div',{className:'dp5-card-lbl'},cellShortLabel(d.to)),
+          h('span',{className:'dp5-tag '+(d.type==='critical'?'tc':d.type==='high'?'th':'tm')},
+            d.type==='critical'?'Critica':d.type==='high'?'Alta':'Media')
+        ]);
+        rightCol.appendChild(card);
+      });
+    }
+    diag.appendChild(rightCol);
+    panel.appendChild(diag);
+
+    // Footer hint
+    var fhint = h('div',{style:{padding:'10px 16px',background:'#F7F4EF',fontSize:'11px',color:'#9A8A70',borderTop:'1px solid #F0EDE7'}},
+      '\u2139\ufe0f Haz clic en cualquier tarjeta del diagrama para navegar a esa celda');
+    panel.appendChild(fhint);
+    body.appendChild(panel);
+  }
+
+  // ── CRITICAL PATH PANEL ──
+  if(showCritPath){
+    var allPaths = activeCritPath ? CRIT_PATHS.filter(function(c){return c.id===activeCritPath;}) : CRIT_PATHS;
+    allPaths.forEach(function(cp){
+      var cpP = h('div',{className:'dp5-cp-panel',style:{borderTop:'4px solid '+cp.color}});
+      cpP.appendChild(h('div',{className:'cp-chain-title',style:{color:cp.color}},cp.label));
+      cpP.appendChild(h('div',{className:'cp-chain-desc'},cp.desc));
+      var chain = h('div',{className:'cp-chain'});
+      cp.keys.forEach(function(k,i){
+        var col=projColor(k);
+        chain.appendChild(h('div',{
+          className:'cp-chain-node',
+          style:{color:cp.color,borderColor:cp.color,background:cp.color+'10',cursor:'pointer'},
+          onclick:function(){showCritPath=false;activeDepCell=k;renderArch();}
+        },k));
+        if(i<cp.keys.length-1){
+          chain.appendChild(h('span',{className:'cp-chain-arrow',style:{color:cp.color}},'\u2192'));
+        }
+      });
+      cpP.appendChild(chain);
+      body.appendChild(cpP);
+    });
+  }
+}
 
 function showSection(s) {
   document.getElementById('bc-section').style.display  = s==='bc'  ? 'flex'  : 'none';
