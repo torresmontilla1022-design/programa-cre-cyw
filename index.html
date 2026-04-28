@@ -334,6 +334,81 @@ tr:last-child td{border-bottom:none}tr:nth-child(even) td{background:var(--cream
 .dep-chip { font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px;
   display:inline-flex; align-items:center; gap:3px; }
 
+
+/* ── VALUE CHAIN section ── */
+.dp5-vc-section {
+  border-top: 1px solid #F0EDE7;
+  padding: 18px 16px 20px;
+}
+.dp5-vc-title {
+  font-size: 10px; font-weight: 800; letter-spacing: 2px;
+  text-transform: uppercase; color: #9A8A70; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.dp5-vc-flow {
+  display: flex; align-items: stretch; gap: 0; overflow-x: auto;
+  padding-bottom: 4px;
+}
+/* Each stage block */
+.dp5-vc-block {
+  flex: 1; min-width: 140px; max-width: 220px;
+  border-radius: 10px; padding: 12px 13px; background: #F7F4EF;
+  display: flex; flex-direction: column; gap: 5px;
+  position: relative;
+}
+.dp5-vc-block.vc-fase   { background: #FDF7F3; border: 1.5px solid #E8D8D0; }
+.dp5-vc-block.vc-cap    { background: #EFF6FF; border: 1.5px solid #BFDBFE; }
+.dp5-vc-block.vc-out    { background: #F0FDF4; border: 1.5px solid #A7F3D0; }
+.dp5-vc-block.vc-ben    { background: #FFFBEB; border: 1.5px solid #FDE68A; }
+.dp5-vc-block-lbl {
+  font-size: 9px; font-weight: 800; letter-spacing: 1.5px;
+  text-transform: uppercase; margin-bottom: 4px;
+}
+.dp5-vc-block.vc-fase .dp5-vc-block-lbl { color: #7A5820; }
+.dp5-vc-block.vc-cap  .dp5-vc-block-lbl { color: #1E40AF; }
+.dp5-vc-block.vc-out  .dp5-vc-block-lbl { color: #065F46; }
+.dp5-vc-block.vc-ben  .dp5-vc-block-lbl { color: #92400E; }
+.dp5-vc-block-txt {
+  font-size: 12px; color: #2C2416; font-weight: 600; line-height: 1.45;
+  flex: 1;
+}
+.dp5-vc-block-sub {
+  font-size: 10px; color: #9A8A70; line-height: 1.35; margin-top: 2px;
+}
+/* Chip list for deliverables */
+.dp5-del-chips { display: flex; flex-direction: column; gap: 3px; margin-top: 2px; }
+.dp5-del-chip {
+  font-size: 10px; color: #5A4A30; background: #EDE8DF;
+  border-radius: 4px; padding: 2px 6px; line-height: 1.35;
+}
+/* Arrow between blocks */
+.dp5-vc-arr {
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  padding: 0 6px; align-self: center;
+}
+.dp5-vc-arr svg { width: 28px; height: 16px; }
+
+/* Enables chain preview */
+.dp5-enables-chain {
+  margin-top: 14px; padding: 12px 14px; background: #F7F4EF;
+  border-radius: 8px; border-left: 3px solid #2E8B6A;
+}
+.dp5-enables-chain-title {
+  font-size: 9px; font-weight: 800; letter-spacing: 1.5px;
+  text-transform: uppercase; color: #2E8B6A; margin-bottom: 8px;
+}
+.dp5-ec-row {
+  display: flex; align-items: flex-start; gap: 8px;
+  margin-bottom: 6px; padding: 6px 8px; background: #fff;
+  border-radius: 6px; border: 1px solid #D1FAE5;
+}
+.dp5-ec-key {
+  font-size: 10px; font-weight: 800; background: #D1FAE5; color: #065F46;
+  border-radius: 4px; padding: 2px 5px; white-space: nowrap; flex-shrink: 0;
+}
+.dp5-ec-cap { font-size: 11px; color: #1E40AF; font-weight: 600; flex: 1; line-height: 1.35; }
+.dp5-ec-arr { color: #2E8B6A; font-size: 13px; flex-shrink: 0; margin-top: 1px; }
+
 </style>
 </head>
 <body>
@@ -1280,6 +1355,80 @@ function renderDeps(body){
     var fhint = h('div',{style:{padding:'10px 16px',background:'#F7F4EF',fontSize:'11px',color:'#9A8A70',borderTop:'1px solid #F0EDE7'}},
       '\u2139\ufe0f Haz clic en cualquier tarjeta del diagrama para navegar a esa celda');
     panel.appendChild(fhint);
+
+    // ── VALUE CHAIN SECTION ──
+    var vcSec = h('div',{className:'dp5-vc-section'});
+    vcSec.appendChild(h('div',{className:'dp5-vc-title'},[
+      h('span',{style:{width:'20px',height:'3px',background:'linear-gradient(90deg,#C8102E,#C27A0A,#2E8B6A)',borderRadius:'2px',display:'inline-block'}}),
+      'Cadena de valor que instala esta fase'
+    ]));
+
+    var flow = h('div',{className:'dp5-vc-flow'});
+
+    function vcArrow(color) {
+      var d = h('div',{className:'dp5-vc-arr'});
+      d.innerHTML = '<svg viewBox="0 0 28 16" fill="none"><polyline points="2,8 22,8 17,3 22,8 17,13" stroke="'+color+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      return d;
+    }
+
+    // Block 1: Fase / Outputs
+    var b1 = h('div',{className:'dp5-vc-block vc-fase'});
+    b1.appendChild(h('div',{className:'dp5-vc-block-lbl'},'\ud83d\udce6 Fases / Outputs'));
+    b1.appendChild(h('div',{className:'dp5-vc-block-txt'},pj?pj.name+' \u00b7 '+(phN?phN.name:''):''));
+    if(cd&&cd.del){
+      var chips = h('div',{className:'dp5-del-chips'});
+      cd.del.slice(0,3).forEach(function(d){
+        chips.appendChild(h('span',{className:'dp5-del-chip'},d));
+      });
+      if(cd.del.length>3) chips.appendChild(h('span',{className:'dp5-del-chip',style:{color:'#9A8A70'}},'+' +(cd.del.length-3)+' m\u00e1s\u2026'));
+      b1.appendChild(chips);
+    }
+    flow.appendChild(b1);
+    flow.appendChild(vcArrow('#B5620A'));
+
+    // Block 2: Capability
+    var b2 = h('div',{className:'dp5-vc-block vc-cap'});
+    b2.appendChild(h('div',{className:'dp5-vc-block-lbl'},'\u26a1 Capability instalada'));
+    b2.appendChild(h('div',{className:'dp5-vc-block-txt'},cd?cd.cap:''));
+    b2.appendChild(h('div',{className:'dp5-vc-block-sub'},'Mecanismo: '+(cd?cd.mec:'')));
+    flow.appendChild(b2);
+    flow.appendChild(vcArrow('#065F46'));
+
+    // Block 3: Outcome
+    var b3 = h('div',{className:'dp5-vc-block vc-out'});
+    b3.appendChild(h('div',{className:'dp5-vc-block-lbl'},'\u2714 Outcome esperado'));
+    b3.appendChild(h('div',{className:'dp5-vc-block-txt'},cd?cd.out:''));
+    flow.appendChild(b3);
+    flow.appendChild(vcArrow('#92400E'));
+
+    // Block 4: Beneficio
+    var b4 = h('div',{className:'dp5-vc-block vc-ben'});
+    b4.appendChild(h('div',{className:'dp5-vc-block-lbl'},'\u2605 Beneficio habilitado'));
+    b4.appendChild(h('div',{className:'dp5-vc-block-txt'},cd?cd.ben:''));
+    flow.appendChild(b4);
+    vcSec.appendChild(flow);
+
+    // What capabilities the cells it enables will install
+    if(info.enables.length){
+      var ecWrap = h('div',{className:'dp5-enables-chain'});
+      ecWrap.appendChild(h('div',{className:'dp5-enables-chain-title'},'\u21aa Capabilities que habilita en los componentes siguientes'));
+      info.enables.forEach(function(d){
+        var nextCell = MATRIX[d.to];
+        if(!nextCell) return;
+        var pjNext = PROJ.find(function(p){return d.to.split('-')[1]===p.id;});
+        var row = h('div',{className:'dp5-ec-row'});
+        row.appendChild(h('span',{className:'dp5-ec-key'},d.to));
+        row.appendChild(h('span',{className:'dp5-ec-arr'},'\u2192'));
+        var right = h('div',{style:{flex:'1'}});
+        right.appendChild(h('div',{className:'dp5-ec-cap'},nextCell.cap));
+        right.appendChild(h('div',{style:{fontSize:'10px',color:'#9A8A70',marginTop:'2px'}},nextCell.out));
+        row.appendChild(right);
+        ecWrap.appendChild(row);
+      });
+      vcSec.appendChild(ecWrap);
+    }
+
+    panel.appendChild(vcSec);
     body.appendChild(panel);
   }
 
