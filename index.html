@@ -409,6 +409,630 @@ tr:last-child td{border-bottom:none}tr:nth-child(even) td{background:var(--cream
 .dp5-ec-cap { font-size: 11px; color: #1E40AF; font-weight: 600; flex: 1; line-height: 1.35; }
 .dp5-ec-arr { color: #2E8B6A; font-size: 13px; flex-shrink: 0; margin-top: 1px; }
 
+
+/* ── GRAPH VIEW v8 — explicit math layout ── */
+.gv-outer {
+  position: relative; overflow-x: auto; overflow-y: visible;
+  border-radius: 10px; border: 1px solid #E8E0D0;
+}
+.gv-canvas { position: relative; isolation: isolate; } /* all children absolutely positioned */
+.gv-svg {
+  position: absolute; top: 0; left: 0;
+  pointer-events: none; z-index: 10; overflow: visible;
+}
+.gv-cell {
+  position: absolute; z-index: 1; border-radius: 8px; padding: 8px 6px;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; cursor: pointer; box-sizing: border-box;
+  transition: box-shadow .15s, transform .15s;
+}
+.gv-cell:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,.15) !important;
+  transform: scale(1.04); z-index: 20;
+}
+.gv-cell-key {
+  font-size: 11px; font-weight: 800; letter-spacing: 1px;
+  text-transform: uppercase; text-align: center; line-height: 1.2;
+}
+.gv-cell-counts {
+  display: flex; gap: 4px; margin-top: 5px; flex-wrap: wrap;
+  justify-content: center;
+}
+.gv-ct {
+  font-size: 8px; font-weight: 800; border-radius: 3px; padding: 1px 5px;
+}
+.gv-phase-hdr {
+  position: absolute; z-index: 1; border-radius: 8px 8px 0 0;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; border-bottom: 3px solid #B5620A;
+  box-sizing: border-box;
+}
+.gv-proj-lbl {
+  position: absolute; z-index: 1; background: #fff; border-radius: 8px;
+  padding: 10px 12px; box-shadow: 0 1px 4px rgba(0,0,0,.07);
+  display: flex; flex-direction: column; justify-content: center;
+  box-sizing: border-box;
+}
+.gv-gate-btn {
+  position: absolute; background: #FDF6E8; border: 2px solid #B5620A;
+  border-radius: 50%; color: #B5620A; font-weight: 800; font-size: 12px;
+  cursor: pointer; font-family: 'Playfair Display',serif;
+  box-shadow: 0 2px 8px rgba(181,98,10,.2); display: flex;
+  align-items: center; justify-content: center; transition: all .18s;
+  box-sizing: border-box;
+}
+.gv-gate-btn:hover { background: #B5620A; color: #fff; }
+/* Animated flow for critical */
+@keyframes gflow { to { stroke-dashoffset: -30; } }
+.g-anim { animation: gflow .8s linear infinite; }
+/* Filter bar */
+.gv-filter-bar {
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  margin-bottom: 12px; padding: 10px 14px; background: #fff;
+  border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+.gv-flt-btn {
+  padding: 5px 12px; border-radius: 16px; border: 1.5px solid #D4C9B4;
+  font-size: 11px; font-weight: 700; cursor: pointer;
+  font-family: inherit; background: #fff; color: #7A6A50;
+  display: flex; align-items: center; gap: 5px; transition: all .15s;
+}
+.gv-flt-btn.on { color: #fff; }
+.gv-dot { width: 8px; height: 8px; border-radius: 50%; }
+.gv-legend { display: flex; gap: 14px; margin-left: auto; flex-wrap: wrap; }
+.gv-leg { display: flex; align-items: center; gap: 5px;
+  font-size: 10px; font-weight: 700; color: #7A6A50; }
+.gv-leg-line { width: 22px; height: 0; border-top: 2.5px solid; border-radius: 2px; }
+.gv-leg-line.dashed { border-top-style: dashed; }
+.gv-guide { font-size: 10px; color: #9A8A70; font-weight: 700; margin-left: auto; }
+.gv-phase-rail { position:absolute; width:2px; background:linear-gradient(180deg, rgba(181,98,10,.14), rgba(181,98,10,.06)); z-index:0; border-radius:2px; }
+.gv-gate-cap { position:absolute; width:30px; height:12px; border-top:2px dashed rgba(181,98,10,.35); z-index:0; }
+.gv-gate-label { position:absolute; font-size:9px; color:#9A8A70; font-weight:700; letter-spacing:.5px; text-transform:uppercase; text-align:center; width:88px; left:-21px; top:50px; line-height:1.2; }
+.gv-bundle-count { filter: drop-shadow(0 1px 3px rgba(0,0,0,.12)); }
+
+
+/* ── DSM / N2 dependency matrix ── */
+.dsm-shell{display:grid;grid-template-columns:minmax(720px,1fr) 360px;gap:16px;align-items:start;margin-top:14px}
+.dsm-card,.dsm-side{background:#fff;border-radius:14px;box-shadow:0 4px 18px rgba(0,0,0,.08);overflow:hidden}
+.dsm-card-head,.dsm-side-head{padding:14px 16px;border-bottom:1px solid #F0EDE7;background:#FCFAF7}
+.dsm-card-title{font-size:13px;font-weight:800;color:#3D2B0A}
+.dsm-card-sub{font-size:11px;color:#9A8A70;margin-top:3px;line-height:1.4}
+.dsm-matrix-wrap{overflow:auto;padding:12px 12px 14px}
+.dsm-grid{display:grid;gap:4px;align-items:stretch}
+.dsm-corner{position:sticky;left:0;top:0;background:#fff;z-index:4;border-radius:8px;padding:8px 10px;border:1px solid #EDE8DF;min-height:58px}
+.dsm-corner .t{font-size:11px;font-weight:800;color:#3D2B0A;line-height:1.25}
+.dsm-corner .s{font-size:10px;color:#9A8A70;margin-top:3px}
+.dsm-colhdr,.dsm-rowhdr,.dsm-cell,.dsm-empty,.dsm-diag{border-radius:8px;min-width:38px;min-height:38px}
+.dsm-colhdr{position:sticky;top:0;z-index:3;background:#fff;border:1px solid #EDE8DF;padding:4px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center}
+.dsm-colhdr .k{font-size:9px;font-weight:800;line-height:1;color:#3D2B0A}
+.dsm-colhdr .c{font-size:8px;line-height:1;color:#9A8A70;font-weight:700}
+.dsm-colhdr .n{font-size:8px;font-weight:800;color:#2563A8;background:#EFF6FF;border-radius:999px;padding:1px 5px;margin-top:1px}
+.dsm-rowhdr{position:sticky;left:0;z-index:2;background:#fff;border:1px solid #EDE8DF;padding:6px 10px;display:flex;flex-direction:column;justify-content:center;min-width:190px}
+.dsm-rowhdr .k{font-size:10px;font-weight:800;line-height:1;color:#3D2B0A}
+.dsm-rowhdr .c{font-size:10px;color:#7A6A50;line-height:1.25;margin-top:3px;font-weight:700}
+.dsm-rowhdr .n{font-size:8px;font-weight:800;color:#065F46;background:#ECFDF5;border-radius:999px;padding:1px 5px;display:inline-block;margin-top:6px;width:max-content}
+.dsm-rowhdr.is-from,.dsm-colhdr.is-to{box-shadow:inset 0 0 0 2px #C8102E;background:#FDECED}
+.dsm-rowhdr.is-to,.dsm-colhdr.is-from{box-shadow:inset 0 0 0 2px #2563A8;background:#EFF6FF}
+.dsm-rowhdr.is-selected,.dsm-colhdr.is-selected{box-shadow:inset 0 0 0 2px #B5620A;background:#FFF7E8}
+.dsm-cell{border:1px solid #E8E0D0;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;font-size:11px;font-weight:800;color:#3D2B0A;position:relative}
+.dsm-cell:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,.10)}
+.dsm-cell.critical{background:#FEE2E2;border-color:#FCA5A5;color:#991B1B}
+.dsm-cell.high{background:#DBEAFE;border-color:#93C5FD;color:#1D4ED8}
+.dsm-cell.medium{background:#FEF3C7;border-color:#FCD34D;color:#92400E}
+.dsm-cell.selected{box-shadow:inset 0 0 0 2px #B5620A,0 4px 12px rgba(181,98,10,.18);transform:translateY(-1px)}
+.dsm-cell.related-row{box-shadow:inset 0 0 0 1.5px #C8102E}
+.dsm-cell.related-col{box-shadow:inset 0 0 0 1.5px #2563A8}
+.dsm-cell.related-row.related-col{box-shadow:inset 0 0 0 2px #7C3AED}
+.dsm-cell .mini{position:absolute;right:3px;bottom:2px;font-size:7px;font-weight:900;opacity:.75}
+.dsm-empty{border:1px dashed #EEE6D9;background:#FCFAF7;color:#D0C5B1;display:flex;align-items:center;justify-content:center;font-size:12px}
+.dsm-diag{border:1px solid #EDE8DF;background:repeating-linear-gradient(135deg,#F7F4EF,#F7F4EF 6px,#FBFAF8 6px,#FBFAF8 12px);display:flex;align-items:center;justify-content:center;font-size:16px;color:#C5B9A4}
+.dsm-legend{display:flex;gap:14px;flex-wrap:wrap;padding:0 16px 14px}
+.dsm-leg{display:flex;align-items:center;gap:7px;font-size:11px;color:#6E604A;font-weight:700}
+.dsm-box{width:14px;height:14px;border-radius:4px;border:1px solid #ddd;flex-shrink:0}
+.dsm-side-body{padding:16px}
+.dsm-empty-state{font-size:12px;color:#7A6A50;line-height:1.6}
+.dsm-kpi-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.dsm-kpi{border-radius:10px;padding:10px 12px}
+.dsm-kpi .l{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;color:#9A8A70}
+.dsm-kpi .v{font-size:15px;font-weight:800;color:#3D2B0A}
+.dsm-flow{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;margin:10px 0 14px}
+.dsm-node{border-radius:12px;padding:10px 12px;background:#FCFAF7;border:1px solid #EDE8DF}
+.dsm-node .k{font-size:10px;font-weight:800;color:#3D2B0A}
+.dsm-node .n{font-size:12px;font-weight:700;color:#5A4A30;line-height:1.35;margin-top:3px}
+.dsm-arrow{font-size:18px;font-weight:900;color:#B5620A}
+.dsm-pair-tag{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;border-radius:999px;padding:4px 10px;margin-bottom:8px}
+.dsm-pair-tag.critical{background:#FEE2E2;color:#991B1B}.dsm-pair-tag.high{background:#DBEAFE;color:#1D4ED8}.dsm-pair-tag.medium{background:#FEF3C7;color:#92400E}
+.dsm-rel-list{display:flex;flex-direction:column;gap:8px;margin:12px 0}
+.dsm-rel-item{border-radius:10px;padding:10px 12px;border-left:4px solid #ddd;background:#FCFAF7}
+.dsm-rel-item .t{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.dsm-rel-item .x{font-size:12px;color:#3D2B0A;line-height:1.45;font-weight:600}
+.dsm-rel-item.critical{border-left-color:#C8102E;background:#FFF4F4}.dsm-rel-item.critical .t{color:#C8102E}
+.dsm-rel-item.high{border-left-color:#2563A8;background:#F6FAFF}.dsm-rel-item.high .t{color:#2563A8}
+.dsm-rel-item.medium{border-left-color:#B5620A;background:#FFF9EF}.dsm-rel-item.medium .t{color:#B5620A}
+.dsm-side-sec{margin-top:14px;padding-top:14px;border-top:1px solid #F0EDE7}
+.dsm-side-sec .ttl{font-size:10px;font-weight:800;color:#9A8A70;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.dsm-link-list{display:flex;flex-direction:column;gap:6px}
+.dsm-link{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 9px;border-radius:8px;background:#F7F4EF;color:#5A4A30;font-size:11px;font-weight:700;cursor:pointer;border:1px solid transparent}
+.dsm-link:hover{border-color:#D4C9B4;background:#fff}
+.dsm-link .pill{font-size:9px;font-weight:800;padding:2px 7px;border-radius:999px}
+.dsm-side-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.dsm-btn{padding:7px 12px;border-radius:8px;border:1px solid #D4C9B4;background:#fff;color:#5A4A30;font-size:11px;font-weight:800;cursor:pointer}
+.dsm-btn.pri{background:#B5620A;border-color:#B5620A;color:#fff}
+.dep-mode-group{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.dep-mode-btn{padding:6px 12px;border-radius:8px;border:1px solid #D4C9B4;background:#fff;color:#7A6A50;font-size:12px;font-weight:800;cursor:pointer}
+.dep-mode-btn.on{background:#3D2B0A;border-color:#3D2B0A;color:#FDF6E8}
+.dsm-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 16px 14px}
+.dsm-summary .box{background:#FCFAF7;border:1px solid #EDE8DF;border-radius:10px;padding:10px 12px}.dsm-summary .l{font-size:9px;font-weight:800;color:#9A8A70;text-transform:uppercase;letter-spacing:1px}.dsm-summary .v{font-size:18px;font-weight:800;color:#3D2B0A;margin-top:2px}
+@media(max-width:1100px){.dsm-shell{grid-template-columns:1fr}.dsm-side{order:-1}}
+
+
+/* === Gate enablement dependency view === */
+.dep-gates-wrap{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,.95fr);gap:18px;align-items:start}
+.dep-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.dep-intro{background:#FFF8EC;border:1px solid #F1D3A5;border-left:5px solid #B5620A;padding:10px 12px;border-radius:10px;color:#6C4A13;font-size:12.5px;line-height:1.45;max-width:820px}
+.dep-filter-group{display:flex;gap:8px;flex-wrap:wrap}
+.dep-filter-btn{border:1px solid #E9D8C8;background:#fff;color:#7A6A50;border-radius:999px;padding:8px 12px;font:700 12px 'Nunito',sans-serif;cursor:pointer}
+.dep-filter-btn.on{background:#3D2B0A;color:#fff;border-color:#3D2B0A}
+.dep-road{background:#fff;border:1px solid #EEE4D8;border-radius:16px;padding:16px;box-shadow:0 10px 28px rgba(61,43,10,.07)}
+.dep-road-head{display:flex;justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.dep-road-title{font:700 22px 'Playfair Display',serif;color:#3D2B0A}
+.dep-road-sub{font:12.5px 'Nunito',sans-serif;color:#8C7A61;max-width:760px;line-height:1.45}
+.dep-chain{display:grid;grid-template-columns:repeat(5,minmax(210px,1fr));gap:14px;align-items:start;overflow:auto;padding-bottom:4px}
+.dep-col{position:relative;min-width:210px}
+.dep-col:not(:last-child)::after{content:'→';position:absolute;top:32px;right:-10px;width:20px;height:20px;border-radius:999px;background:#F6EFE8;border:1px solid #E7DACB;color:#B5620A;display:flex;align-items:center;justify-content:center;font:800 13px 'Nunito',sans-serif;z-index:3}
+.dep-gate{background:linear-gradient(180deg,#FFFDFC 0%,#FBF7F2 100%);border:1px solid #EBDDCF;border-radius:14px;padding:12px 12px 10px;box-shadow:0 8px 18px rgba(61,43,10,.05)}
+.dep-gate-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px}
+.dep-gate-id{display:inline-flex;align-items:center;justify-content:center;min-width:38px;height:38px;border-radius:12px;background:#3D2B0A;color:#fff;font:800 13px 'Nunito',sans-serif}
+.dep-gate-name{font:800 14px 'Nunito',sans-serif;color:#3D2B0A;line-height:1.2}
+.dep-gate-go{font:11.5px 'Nunito',sans-serif;color:#8C7A61;line-height:1.35;margin-top:4px}
+.dep-habilita{background:#F8F3ED;border:1px dashed #E7DACB;border-radius:10px;padding:8px 10px;margin:10px 0 12px;color:#6E5A40;font:700 11.5px 'Nunito',sans-serif;line-height:1.35}
+.dep-items{display:grid;gap:8px}
+.dep-item{background:#fff;border:1px solid #EDE3D7;border-radius:12px;padding:10px 10px 10px 12px;box-shadow:0 4px 12px rgba(61,43,10,.04);cursor:pointer;transition:transform .12s ease, box-shadow .12s ease,border-color .12s ease;position:relative}
+.dep-item:hover{transform:translateY(-1px);box-shadow:0 10px 18px rgba(61,43,10,.08)}
+.dep-item.selected{border-color:#B5620A;box-shadow:0 0 0 2px rgba(181,98,10,.10),0 10px 22px rgba(61,43,10,.09)}
+.dep-item.critical{border-left:5px solid #C8102E}
+.dep-item.high{border-left:5px solid #2563A8}
+.dep-item.medium{border-left:5px solid #C27A0A}
+.dep-item-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:5px}
+.dep-origin{font:800 11.5px 'Nunito',sans-serif;color:#3D2B0A}
+.dep-projchip{font:800 10.5px 'Nunito',sans-serif;color:#fff;border-radius:999px;padding:3px 7px;white-space:nowrap}
+.dep-item-label{font:700 12.5px 'Nunito',sans-serif;color:#42321D;line-height:1.3}
+.dep-item-why{font:11.5px 'Nunito',sans-serif;color:#8B7A60;line-height:1.35;margin-top:4px}
+.dep-item-type{display:inline-flex;align-items:center;gap:5px;margin-top:6px;border-radius:999px;padding:3px 8px;font:800 10.5px 'Nunito',sans-serif}
+.dep-item-type.critical{background:#FEE2E2;color:#991B1B}
+.dep-item-type.high{background:#DBEAFE;color:#1D4ED8}
+.dep-item-type.medium{background:#FEF3C7;color:#92400E}
+.dep-side{background:#fff;border:1px solid #EEE4D8;border-radius:16px;box-shadow:0 10px 28px rgba(61,43,10,.07);position:sticky;top:18px;overflow:hidden}
+.dep-side-head{padding:16px 16px 10px;border-bottom:1px solid #F0E7DB;background:linear-gradient(180deg,#FFFDFB 0%,#FBF7F2 100%)}
+.dep-side-title{font:700 21px 'Playfair Display',serif;color:#3D2B0A}
+.dep-side-sub{font:12px 'Nunito',sans-serif;color:#8C7A61;line-height:1.45;margin-top:4px}
+.dep-side-body{padding:16px}
+.dep-empty{background:#FBF8F4;border:1px dashed #E7DACB;border-radius:14px;padding:16px;color:#7D6B54;font:12.5px 'Nunito',sans-serif;line-height:1.6}
+.dep-kv{display:grid;grid-template-columns:112px 1fr;gap:8px 10px;margin-bottom:14px;font:12.5px 'Nunito',sans-serif}
+.dep-kv .k{font-weight:800;color:#6A573B}
+.dep-kv .v{color:#3B2E1C;line-height:1.45}
+.dep-badges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.dep-badge{border-radius:999px;padding:4px 10px;font:800 11px 'Nunito',sans-serif}
+.dep-badge.critical{background:#FEE2E2;color:#991B1B}
+.dep-badge.high{background:#DBEAFE;color:#1D4ED8}
+.dep-badge.medium{background:#FEF3C7;color:#92400E}
+.dep-badge.gate{background:#F3E8FF;color:#7C3AED}
+.dep-next{background:#F8F3ED;border:1px solid #E7DACB;border-radius:12px;padding:12px;margin:14px 0}
+.dep-next .ttl{font:800 11.5px 'Nunito',sans-serif;color:#6C583D;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+.dep-next .txt{font:12.5px 'Nunito',sans-serif;color:#3B2E1C;line-height:1.45}
+.dep-side-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.dep-side-btn{border:1px solid #E7DACB;background:#fff;color:#6E5A40;border-radius:999px;padding:8px 12px;font:800 11.5px 'Nunito',sans-serif;cursor:pointer}
+.dep-side-btn.pri{background:#3D2B0A;color:#fff;border-color:#3D2B0A}
+.dep-mini-list{display:grid;gap:8px;margin-top:10px}
+.dep-mini{background:#FCFAF7;border:1px solid #EFE6DA;border-radius:12px;padding:10px}
+.dep-mini .h{font:800 11.5px 'Nunito',sans-serif;color:#6A573B;margin-bottom:4px}
+.dep-mini .t{font:12px 'Nunito',sans-serif;color:#3B2E1C;line-height:1.45}
+@media (max-width: 1120px){.dep-gates-wrap{grid-template-columns:1fr}.dep-side{position:static}.dep-chain{grid-template-columns:1fr}.dep-col:not(:last-child)::after{content:'↓';top:auto;bottom:-12px;right:auto;left:calc(50% - 10px)}}
+
+
+/* ── Dependency architecture board (vNext) ── */
+.dep-arch-wrap{background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.08);overflow:hidden;margin-top:12px}
+.dep-arch-head{padding:18px 20px;border-bottom:1px solid #F0EDE7;background:#FCFBF9}
+.dep-arch-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#3D2B0A}
+.dep-arch-sub{font-size:12px;color:#7A6A50;line-height:1.55;margin-top:4px;max-width:980px}
+.dep-arch-legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.dep-pill{font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;border-radius:20px;padding:5px 10px}
+.dep-arch-tablewrap{overflow:auto;padding:12px 14px 18px;background:#FAF8F5}
+.dep-arch-grid{min-width:1280px;display:grid;grid-template-columns:190px 330px 200px 250px 200px 220px;gap:10px;align-items:start}
+.dep-arch-h{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#3D2B0A;padding:8px 10px;border-bottom:2px solid #D9C9AD;background:#F4EDE3}
+.dep-arch-row{display:contents}
+.dep-arch-cell{background:#fff;border:1px solid #E9E1D4;border-radius:12px;padding:12px 12px 12px 12px;min-height:142px}
+.dep-comp{display:flex;flex-direction:column;gap:8px;justify-content:flex-start;height:100%}
+.dep-comp-badge{width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Playfair Display',serif;font-weight:700;font-size:18px;box-shadow:inset 0 -4px 0 rgba(0,0,0,.16)}
+.dep-comp-name{font-size:14px;font-weight:800;color:#2C2416;line-height:1.3}
+.dep-comp-lead{font-size:11px;color:#8A7A60;line-height:1.35}
+.dep-route{display:flex;flex-direction:column;gap:6px}
+.dep-step{display:flex;align-items:flex-start;gap:8px;padding:7px 8px;border-radius:10px;border:1px solid #E8D8D0;background:#FDF7F3;cursor:pointer;transition:all .16s}
+.dep-step:hover{transform:translateX(2px);box-shadow:0 3px 10px rgba(0,0,0,.07)}
+.dep-step-k{flex-shrink:0;min-width:44px;height:24px;border-radius:6px;background:#fff;color:#B5620A;border:1px solid #E9D4A6;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800}
+.dep-step-t{font-size:11px;color:#5A4A30;line-height:1.35;font-weight:700}
+.dep-step-arrow{font-size:15px;line-height:1;color:#B8AA92;text-align:center;margin:-2px 0 0 24px}
+.dep-linkbox{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.dep-linkpane{border-radius:10px;padding:8px;background:#F8FAFC;border:1px solid #E5E7EB}
+.dep-linkpane .ttl{font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+.dep-chiprow{display:flex;gap:4px;flex-wrap:wrap}
+.dep-chip2{font-size:10px;font-weight:800;border-radius:12px;padding:2px 8px;line-height:1.3}
+.dep-stack{display:flex;flex-direction:column;gap:7px}
+.dep-stack-card{border-radius:10px;padding:9px 10px;font-size:11px;font-weight:700;line-height:1.35;background:#EFF6FF;border:1px solid #BFDBFE;color:#1F3E6B}
+.dep-stack-card.out{background:#ECFDF5;border-color:#A7F3D0;color:#18553F}
+.dep-trans-list{display:flex;flex-direction:column;gap:6px}
+.dep-trans-item{display:flex;align-items:flex-start;gap:7px;padding:7px 8px;border-radius:10px;background:#FFFDF8;border:1px solid #EEE4D3;font-size:11px;line-height:1.35;color:#5A4A30;font-weight:700}
+.dep-trans-dot{width:7px;height:7px;border-radius:50%;background:#C27A0A;flex-shrink:0;margin-top:4px}
+.dep-ben-list{display:flex;flex-direction:column;gap:7px}
+.dep-ben-item{padding:8px 9px;border-radius:10px;background:#F9FAFB;border:1px solid #E5E7EB;font-size:11px;color:#4B5563;line-height:1.35;font-weight:700}
+.dep-hintbox{margin-top:12px;padding:12px 14px;background:#FFF8F1;border:1px dashed #D9B38C;border-radius:12px;font-size:12px;color:#7A5B36;line-height:1.55}
+.dep-mini-actions{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
+.dep-open-btn{font-size:10px;font-weight:800;border-radius:8px;border:1px solid #D9C9AD;background:#fff;color:#7A6A50;padding:5px 8px;cursor:pointer}
+.dep-open-btn:hover{background:#F7F4EF}
+@media (max-width:1100px){.dep-arch-grid{min-width:1180px}}
+
+
+/* === DEPENDENCIAS v6 — esquema lineal por componente === */
+.dep-arch-tablewrap{overflow:auto;padding:12px 14px 18px;background:#FAF8F5}
+.dep-arch-grid.v6{min-width:1400px;display:grid;grid-template-columns:180px 260px 38px 250px 38px 280px 38px 240px;gap:10px;align-items:stretch}
+.dep-arch-h.blank{background:transparent;border-bottom:none}
+.dep-arch-cell.v6{background:#fff;border:1px solid #E9E1D4;border-radius:12px;padding:12px;min-height:160px;position:relative}
+.dep-arrow-col{display:flex;align-items:center;justify-content:center;min-height:160px;color:#B5620A;font-size:22px;font-weight:900;position:relative}
+.dep-arrow-col::before{content:"";position:absolute;left:5px;right:5px;top:50%;height:2px;background:#E5D5BC;transform:translateY(-50%)}
+.dep-arrow-col span{position:relative;z-index:1;background:#FAF8F5;border:1px solid #E5D5BC;border-radius:999px;padding:3px 8px;font-size:14px;line-height:1;color:#B5620A}
+.dep-phase-chain{display:flex;flex-direction:column;gap:6px;position:relative;padding-left:6px}
+.dep-phase-chain::before{content:"";position:absolute;left:17px;top:10px;bottom:10px;width:2px;background:#E9D4A6}
+.dep-phase-node{position:relative;display:flex;align-items:center;gap:8px;padding-left:0}
+.dep-phase-bullet{width:10px;height:10px;border-radius:50%;background:#B5620A;flex-shrink:0;box-shadow:0 0 0 3px #FFF7ED;z-index:1}
+.dep-phase-key{display:inline-flex;align-items:center;justify-content:center;min-width:64px;height:28px;border-radius:8px;background:#FFF7ED;color:#9A5B13;border:1px solid #F0D8A7;font-size:10px;font-weight:800;letter-spacing:.4px;cursor:pointer}
+.dep-phase-key:hover{background:#FFEFD7}
+.dep-phase-caption{font-size:10px;color:#8A7A60;font-weight:700}
+.dep-cell-title{font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#7A6A50;margin-bottom:8px}
+.dep-stack-card.cap{background:#EFF6FF;border-color:#BFDBFE;color:#1F3E6B}
+.dep-flow-col{display:flex;flex-direction:column;gap:8px}
+.dep-flow-card{border-radius:10px;padding:10px 10px;font-size:11px;font-weight:700;line-height:1.35;background:#FFFDF8;border:1px solid #EEE4D3;color:#5A4A30}
+.dep-ben-item{padding:8px 10px;border-radius:10px;background:#FDF2F8;border:1px solid #F3C9DA;color:#9D174D;font-size:11px;font-weight:700;line-height:1.35}
+.dep-input-box{margin-top:10px;padding:9px 10px;border-radius:10px;background:#FCFBF9;border:1px dashed #D9C9AD}
+.dep-input-title{font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#7A6A50;margin-bottom:6px}
+.dep-input-chips{display:flex;gap:6px;flex-wrap:wrap}
+.dep-in-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:800;cursor:pointer;border:1px solid #D7E7FB;background:#EFF6FF;color:#1E40AF}
+.dep-in-chip.critical{background:#FDECEC;color:#9E0C24;border-color:#F3B9C1}
+.dep-in-chip.high{background:#EFF6FF;color:#1E40AF;border-color:#C8DBF5}
+.dep-in-chip.medium{background:#F5F3FF;color:#5B21B6;border-color:#DDD6FE}
+.dep-chip-sev{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;font-size:8px;font-weight:900;background:rgba(255,255,255,.8)}
+.dep-meta-note{margin-top:8px;font-size:10px;color:#8A7A60;line-height:1.45}
+.dep-mini-actions.v6{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.dep-open-btn.sm{padding:4px 8px;font-size:10px}
+
+/* Ajustes finales Dependencias v7: fase-output reducido a código y flujo más legible */
+.dep-phase-node{appearance:none;border:none;background:transparent;font-family:'Nunito',sans-serif;text-align:left;cursor:pointer;padding:0;display:flex;align-items:center;gap:8px;position:relative;width:100%}
+.dep-phase-node:hover .dep-phase-key{background:#FFEFD7;transform:translateX(2px)}
+.dep-phase-key{text-transform:lowercase;transition:all .14s ease}
+.dep-phase-caption{display:none!important}
+.dep-arch-grid.v6{grid-template-columns:190px 220px 46px 270px 46px 290px 46px 260px}
+.dep-arch-cell.v6{min-height:176px}
+.dep-arrow-col{min-height:176px}
+.dep-arrow-col::before{height:3px;background:linear-gradient(90deg,#EADCC6,#B5620A,#EADCC6)}
+.dep-arrow-col span{box-shadow:0 2px 8px rgba(181,98,10,.12)}
+.dep-input-chips .dep-in-chip{cursor:pointer}
+.dep-in-chip span:last-child{text-transform:lowercase}
+.dep-hintbox strong{color:#3D2B0A}
+@media (max-width:1100px){.dep-arch-grid.v6{min-width:1260px}}
+
+
+/* === DEPENDENCIAS v8 — ajuste responsive sin scroll horizontal === */
+#arch-section{overflow-x:hidden;}
+.arch-body{max-width:100%;padding-left:18px;padding-right:18px;}
+.dep-arch-wrap{width:100%;max-width:100%;}
+.dep-arch-head{padding:14px 16px;}
+.dep-arch-sub{max-width:100%;font-size:11.5px;line-height:1.42;}
+.dep-arch-legend{gap:5px;margin-top:8px;}
+.dep-pill{font-size:8.8px;padding:4px 7px;letter-spacing:.35px;}
+.dep-arch-tablewrap{overflow-x:hidden!important;padding:9px 10px 12px;background:#FAF8F5;}
+.dep-arch-grid.v6{
+  min-width:0!important;
+  width:100%;
+  display:grid;
+  grid-template-columns:minmax(118px,.72fr) minmax(96px,.58fr) 18px minmax(150px,1fr) 18px minmax(155px,1.02fr) 18px minmax(150px,1fr)!important;
+  gap:6px!important;
+  align-items:stretch;
+}
+.dep-arch-h{font-size:8.8px;padding:6px 6px;letter-spacing:.5px;line-height:1.15;white-space:normal;display:flex;align-items:center;min-height:28px;}
+.dep-arch-h.blank{min-height:28px;padding:0;}
+.dep-arch-cell.v6{min-height:132px!important;padding:8px!important;border-radius:10px;overflow:hidden;}
+.dep-arrow-col{min-height:132px!important;font-size:14px;}
+.dep-arrow-col::before{left:0;right:0;height:2px;}
+.dep-arrow-col span{padding:2px 5px;font-size:10px;background:#FAF8F5;}
+.dep-comp{gap:5px;}
+.dep-comp-badge{width:36px;height:36px;border-radius:10px;font-size:13px;}
+.dep-comp-name{font-size:11px;line-height:1.15;}
+.dep-comp-lead{font-size:9px;line-height:1.2;}
+.dep-meta-note{font-size:8.7px;line-height:1.25;margin-top:5px;}
+.dep-cell-title{font-size:8.7px;letter-spacing:.5px;margin-bottom:5px;line-height:1.15;}
+.dep-phase-chain{gap:4px;padding-left:2px;}
+.dep-phase-chain::before{left:10px;top:8px;bottom:8px;width:1.5px;}
+.dep-phase-node{gap:5px;}
+.dep-phase-bullet{width:8px;height:8px;box-shadow:0 0 0 2px #FFF7ED;}
+.dep-phase-key{min-width:42px;height:22px;font-size:8.8px;border-radius:6px;}
+.dep-mini-actions.v6{gap:4px;margin-top:6px;}
+.dep-open-btn.sm{padding:3px 5px;font-size:8.8px;border-radius:6px;}
+.dep-stack{gap:5px;}
+.dep-stack-card,.dep-stack-card.cap{padding:6px 7px;font-size:9.6px;line-height:1.23;border-radius:8px;}
+.dep-input-box{margin-top:6px;padding:6px 7px;border-radius:8px;}
+.dep-input-title{font-size:8px;letter-spacing:.45px;margin-bottom:4px;}
+.dep-input-chips{gap:4px;}
+.dep-in-chip{font-size:8.6px;padding:2px 5px;gap:3px;max-width:100%;}
+.dep-chip-sev{width:11px;height:11px;font-size:7px;}
+.dep-flow-col{gap:5px;}
+.dep-flow-card{padding:6px 7px;font-size:9.7px;line-height:1.24;border-radius:8px;}
+.dep-ben-list{gap:5px;}
+.dep-ben-item{padding:6px 7px;font-size:9.7px;line-height:1.24;border-radius:8px;}
+.dep-hintbox{margin-top:8px;padding:9px 10px;font-size:10.5px;line-height:1.4;}
+
+@media (max-width:1180px){
+  .arch-body{padding-left:12px;padding-right:12px;}
+  .dep-arch-grid.v6{grid-template-columns:minmax(92px,.58fr) minmax(70px,.44fr) 14px minmax(125px,1fr) 14px minmax(130px,1fr) 14px minmax(125px,1fr)!important;gap:4px!important;}
+  .dep-arch-cell.v6{padding:6px!important;}
+  .dep-arch-h{font-size:7.8px;padding:5px 4px;}
+  .dep-comp-badge{width:30px;height:30px;font-size:11px;}
+  .dep-comp-name{font-size:9.5px;}
+  .dep-comp-lead,.dep-meta-note{font-size:7.8px;}
+  .dep-cell-title{font-size:7.8px;}
+  .dep-phase-key{min-width:36px;height:20px;font-size:7.9px;}
+  .dep-stack-card,.dep-flow-card,.dep-ben-item{font-size:8.6px;padding:5px 6px;}
+  .dep-in-chip{font-size:7.8px;padding:2px 4px;}
+}
+
+@media (max-width:760px){
+  .dep-arch-grid.v6{display:flex!important;flex-direction:column;gap:8px!important;}
+  .dep-arch-h,.dep-arrow-col{display:none!important;}
+  .dep-arch-cell.v6{min-height:auto!important;}
+}
+
+
+/* === DEPENDENCIAS v9 — composición 5 columnas, sin desplazamiento lateral === */
+.dep-arch-tablewrap{overflow-x:hidden!important;}
+.dep-arch-grid.v6{
+  min-width:0!important;
+  width:100%!important;
+  grid-template-columns:minmax(128px,.75fr) minmax(82px,.48fr) minmax(210px,1.25fr) minmax(200px,1.12fr) minmax(200px,1.12fr)!important;
+  gap:8px!important;
+}
+.dep-arch-h.blank,.dep-arrow-col{display:none!important;}
+.dep-arch-cell.v6.dep-linked{position:relative;}
+.dep-arch-cell.v6.dep-linked::after{
+  content:'→';
+  position:absolute;
+  right:-13px;
+  top:50%;
+  transform:translateY(-50%);
+  width:18px;
+  height:18px;
+  border-radius:999px;
+  background:#FAF8F5;
+  border:1px solid #E5D5BC;
+  color:#B5620A;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:10px;
+  font-weight:900;
+  z-index:5;
+}
+.dep-arch-cell.v6{min-height:124px!important;}
+.dep-phase-chain{display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:4px;}
+.dep-phase-key{min-width:40px;}
+.dep-mini-actions.v6{display:none;}
+@media (max-width:1180px){
+  .dep-arch-grid.v6{grid-template-columns:minmax(96px,.65fr) minmax(56px,.38fr) minmax(160px,1.2fr) minmax(150px,1fr) minmax(150px,1fr)!important;gap:6px!important;}
+  .dep-arch-cell.v6.dep-linked::after{right:-10px;width:15px;height:15px;font-size:8px;}
+  .dep-phase-key{min-width:34px;}
+}
+@media (max-width:760px){
+  .dep-arch-grid.v6{display:flex!important;flex-direction:column;gap:8px!important;}
+  .dep-arch-h{display:none!important;}
+  .dep-arch-cell.v6.dep-linked::after{content:'↓';right:calc(50% - 9px);top:auto;bottom:-13px;transform:none;}
+}
+
+
+
+/* === DEPENDENCIAS v10 — legibilidad sin scroll lateral + vínculos robustos === */
+.dep-arch-tablewrap{overflow-x:hidden!important;padding:10px 12px 14px!important;}
+.dep-arch-grid.v6{
+  min-width:0!important;
+  width:100%!important;
+  grid-template-columns:minmax(132px,.72fr) minmax(112px,.58fr) minmax(220px,1.18fr) minmax(210px,1.08fr) minmax(210px,1.08fr)!important;
+  gap:8px!important;
+}
+.dep-arch-h{font-size:10px!important;line-height:1.18!important;padding:7px 7px!important;letter-spacing:.55px!important;}
+.dep-arch-cell.v6{min-height:142px!important;padding:9px!important;border-radius:11px!important;overflow:visible!important;}
+.dep-arch-cell.v6.dep-linked::after{right:-13px;width:18px;height:18px;font-size:10px;}
+.dep-comp-badge{width:38px!important;height:38px!important;border-radius:10px!important;font-size:14px!important;}
+.dep-comp-name{font-size:12.2px!important;line-height:1.22!important;}
+.dep-comp-lead{font-size:10.4px!important;line-height:1.28!important;}
+.dep-meta-note{font-size:10.2px!important;line-height:1.32!important;margin-top:6px!important;}
+.dep-cell-title{font-size:9.8px!important;line-height:1.15!important;margin-bottom:6px!important;letter-spacing:.55px!important;}
+.dep-phase-chain{gap:5px!important;}
+.dep-phase-chain::before{left:11px!important;}
+.dep-phase-node{appearance:none;-webkit-appearance:none;border:none;background:transparent;font-family:'Nunito',sans-serif;text-align:left;cursor:pointer;padding:0;width:100%;}
+.dep-phase-key{min-width:52px!important;height:25px!important;font-size:10.5px!important;border-radius:7px!important;letter-spacing:.35px!important;}
+.dep-phase-bullet{width:9px!important;height:9px!important;}
+.dep-clickable{cursor:pointer!important;}
+.dep-clickable:focus-visible{outline:2px solid #B5620A;outline-offset:2px;}
+.dep-stack{gap:6px!important;}
+.dep-stack-card,.dep-stack-card.cap,.dep-flow-card,.dep-ben-item{
+  font-size:11.2px!important;
+  line-height:1.28!important;
+  padding:7px 8px!important;
+  border-radius:9px!important;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+.dep-input-box{margin-top:7px!important;padding:7px 8px!important;border-radius:9px!important;}
+.dep-input-title{font-size:9px!important;margin-bottom:5px!important;}
+.dep-input-chips{gap:5px!important;}
+.dep-in-chip{
+  appearance:none!important;
+  -webkit-appearance:none!important;
+  font-family:'Nunito',sans-serif!important;
+  font-size:10.2px!important;
+  line-height:1.15!important;
+  padding:4px 7px!important;
+  gap:4px!important;
+  text-align:left!important;
+  white-space:normal!important;
+  max-width:100%!important;
+}
+.dep-chip-sev{width:13px!important;height:13px!important;font-size:7.5px!important;flex:0 0 auto!important;}
+.dep-flow-col,.dep-ben-list{gap:6px!important;}
+.dep-hintbox{font-size:11.5px!important;line-height:1.42!important;}
+@media (max-width:1180px){
+  .arch-body{padding-left:10px!important;padding-right:10px!important;}
+  .dep-arch-grid.v6{grid-template-columns:minmax(110px,.65fr) minmax(88px,.52fr) minmax(175px,1.15fr) minmax(165px,1fr) minmax(165px,1fr)!important;gap:6px!important;}
+  .dep-arch-h{font-size:9.2px!important;padding:6px 5px!important;}
+  .dep-arch-cell.v6{padding:7px!important;}
+  .dep-comp-name{font-size:11px!important;}
+  .dep-comp-lead,.dep-meta-note{font-size:9.5px!important;}
+  .dep-phase-key{min-width:46px!important;height:23px!important;font-size:9.6px!important;}
+  .dep-stack-card,.dep-stack-card.cap,.dep-flow-card,.dep-ben-item{font-size:10.4px!important;padding:6px 7px!important;}
+  .dep-in-chip{font-size:9.5px!important;padding:3px 6px!important;}
+}
+@media (max-width:760px){
+  .dep-arch-grid.v6{display:flex!important;flex-direction:column;gap:8px!important;}
+  .dep-arch-h{display:none!important;}
+  .dep-arch-cell.v6.dep-linked::after{content:'↓';right:calc(50% - 9px);top:auto;bottom:-13px;transform:none;}
+  .dep-stack-card,.dep-stack-card.cap,.dep-flow-card,.dep-ben-item{-webkit-line-clamp:unset;display:block;}
+}
+
+
+
+/* ─── ROADMAP DEL PROGRAMA ─── */
+#roadmap-section{display:none;margin-top:58px;min-height:calc(100vh - 58px);background:#F7F4EF;font-family:'Nunito',sans-serif;overflow-x:hidden;color:#1A1A1A;}
+.roadmap-header{background:linear-gradient(135deg,#2F2109,#5C3D12 58%,#8B5A1B);padding:17px 28px 15px;box-shadow:0 3px 12px rgba(0,0,0,.12);}
+.roadmap-kicker{font-size:10.5px;font-weight:800;letter-spacing:3px;color:#E8C97A;text-transform:uppercase;}
+.roadmap-header h1{font-family:'Playfair Display',serif;font-size:22px;line-height:1.18;color:#FFF7E6;margin:4px 0 3px;}
+.roadmap-header p{font-size:12.8px;color:#E5CFA4;margin:0;max-width:1110px;line-height:1.45;}
+.rm-head-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;}
+.rm-action-chip{border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#FFF7E6;border-radius:999px;padding:5px 10px;font-size:11px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .16s;}
+.rm-action-chip:hover{background:#B5620A;border-color:#B5620A;}
+.rm-body{max-width:1540px;margin:0 auto;padding:16px 20px 28px;}
+.rm-overview{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin-bottom:12px;}
+.rm-card{background:#fff;border:1px solid #E7DDCF;border-radius:14px;box-shadow:0 2px 10px rgba(61,43,10,.06);overflow:hidden;}
+.rm-card-pad{padding:13px 15px;}
+.rm-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:800;color:#3D2B0A;margin-bottom:4px;}
+.rm-sub{font-size:12.4px;color:#6D604F;line-height:1.45;}
+.rm-mini-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:10px;}
+.rm-mini{background:#FAF7F1;border:1px solid #EEE4D6;border-radius:10px;padding:8px 9px;}
+.rm-mini-num{font-family:'Playfair Display',serif;font-size:17px;font-weight:800;color:#B5620A;line-height:1;}
+.rm-mini-lbl{font-size:10px;font-weight:800;color:#7A6A50;text-transform:uppercase;letter-spacing:.5px;margin-top:3px;line-height:1.2;}
+.rm-components-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:8px;}
+.rm-comp-check{font-size:10.7px;color:#3D2B0A;background:#F7F0E7;border:1px solid #E6D7C2;border-radius:7px;padding:5px 7px;font-weight:700;line-height:1.25;display:flex;align-items:flex-start;gap:5px;}
+.rm-comp-check::before{content:'✓';color:#0F6B4B;font-weight:900;font-size:10px;margin-top:1px;}
+.rm-main-grid{display:grid;grid-template-columns:minmax(0,1fr) 308px;gap:12px;align-items:start;}
+.rm-timeline-card{position:relative;background:#fff;border:1px solid #E4D8C7;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(61,43,10,.08);min-width:0;}
+.rm-timeline-top{display:grid;grid-template-columns:150px minmax(0,1fr);background:#FFF7ED;border-bottom:1px solid #E6D7C2;position:relative;z-index:4;}
+.rm-time-label{padding:8px 11px;font-size:10px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:#7A4C12;border-right:1px solid #E6D7C2;display:flex;align-items:center;}
+.rm-month-row{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));}
+.rm-month-block{padding:6px 4px 7px;text-align:center;font-weight:900;color:#5C3D12;border-right:1px solid #E6D7C2;line-height:1.12;background:#FFF9F2;}
+.rm-month-block:last-child{border-right:none;}
+.rm-month-block strong{font-size:12.2px;display:block;}
+.rm-month-block span{font-size:9.5px;color:#8A6E42;font-weight:800;letter-spacing:.2px;}
+.rm-lane{display:grid;grid-template-columns:150px minmax(0,1fr);border-bottom:1px solid #EEE4D6;min-width:0;position:relative;z-index:3;}
+.rm-lane:last-child{border-bottom:none;}
+.rm-lane-label{background:#FAF8F5;border-right:1px solid #E6D7C2;padding:8px 10px;display:flex;flex-direction:column;justify-content:center;gap:2px;}
+.rm-lane-code{font-size:9.2px;font-weight:900;color:#B5620A;text-transform:uppercase;letter-spacing:.8px;}
+.rm-lane-name{font-size:12px;font-weight:900;color:#3D2B0A;line-height:1.16;}
+.rm-lane-note{font-size:9.4px;color:#8B7A63;line-height:1.18;margin-top:1px;}
+.rm-track{position:relative;height:var(--lane-h,60px);min-height:52px;background-color:#FFFCF8;background-image:linear-gradient(90deg, rgba(181,98,10,.12) 1px, transparent 1px);background-size:12.5% 100%;overflow:visible;}
+.rm-track::after{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;background:rgba(255,255,255,.7);}
+.rm-empty-note{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:10.5px;font-weight:900;color:#9A8A70;background:rgba(255,255,255,.72);border:1px dashed #D8C8B8;border-radius:999px;padding:4px 10px;}
+.rm-item{position:absolute;left:var(--x);top:var(--y,8px);width:var(--w);min-height:26px;border-radius:8px;background:#FDF7F3;border:1px solid #D8C8B8;color:#332613;padding:5px 7px;font-size:10.85px;line-height:1.12;font-weight:800;box-shadow:0 1px 4px rgba(0,0,0,.10);cursor:pointer;font-family:'Nunito',sans-serif;text-align:left;display:flex;align-items:center;gap:6px;overflow:hidden;transition:transform .15s, box-shadow .15s, filter .15s, opacity .15s;z-index:7;}
+.rm-item:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(0,0,0,.14);filter:saturate(1.05);z-index:8;}
+.rm-item.selected{outline:2px solid #3D2B0A;outline-offset:1px;z-index:12;}
+.rm-item span{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.rm-item.proyecto{min-height:38px;justify-content:flex-start;text-align:left;flex-direction:column;align-items:stretch;padding:5px 7px;color:#fff;border-color:rgba(0,0,0,.18);gap:4px;overflow:visible;}
+.rm-item.proyecto span{-webkit-line-clamp:1;}
+.rm-project-head{display:flex;align-items:center;justify-content:space-between;gap:6px;}
+.rm-project-main{display:block;font-size:11.2px;font-weight:900;line-height:1;}
+.rm-project-phase-chip{font-size:8px;font-weight:900;color:#fff;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:2px 6px;line-height:1;}
+.rm-project-trail{display:flex;gap:3px;flex-wrap:nowrap;align-items:center;}
+.rm-project-step{min-width:0;flex:1 1 auto;height:12px;border-radius:999px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);position:relative;}
+.rm-project-step::after{content:attr(data-phase);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:900;color:rgba(255,255,255,.86);letter-spacing:.1px;}
+.rm-project-step.active{background:rgba(255,255,255,.42);border-color:rgba(255,255,255,.72);box-shadow:inset 0 0 0 1px rgba(255,255,255,.18);}
+.rm-project-step.active::after{color:#fff;}
+.rm-item.fase{background:#FFF7ED;color:#71410B;border-color:#E4B46A;}
+.rm-item.beneficio{background:#EAF7F0;color:#0F6B4B;border-color:#9DD9B8;}
+.rm-item.dependencia{background:#FFF1F2;color:#A11E35;border-color:#FDA4AF;border-style:dashed;box-shadow:0 1px 4px rgba(161,30,53,.12);min-height:22px;justify-content:center;text-align:center;padding:4px 7px;}
+.rm-item.dependencia span{display:block;-webkit-line-clamp:1;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;font-size:9.6px;}
+.rm-item.riesgo{background:#FFF7ED;color:#92400E;border-color:#F4B45C;min-height:30px;}
+.rm-item.supuesto{background:#ECFDF5;color:#065F46;border-color:#86D9A8;}
+.rm-item.impedimento{background:#EFF6FF;color:#075985;border-color:#7DD3FC;}
+.rm-item.hito{width:34px;height:34px;min-height:34px;padding:0;border-radius:0;background:transparent;border:none;box-shadow:none;overflow:visible;justify-content:center;transform:translateX(-50%);z-index:9;}
+.rm-item.hito:hover{transform:translateX(-50%) translateY(-1px);box-shadow:none;}
+.rm-diamond{width:20px;height:20px;background:#111;transform:rotate(45deg);display:block;box-shadow:0 1px 5px rgba(0,0,0,.25);position:relative;z-index:1;}
+.rm-item.hito span:last-child{position:absolute;top:23px;left:-42px;width:118px;text-align:center;font-size:9.2px;color:#3D2B0A;line-height:1.08;font-weight:900;transform:none;display:block;z-index:2;background:rgba(255,255,255,.92);padding:1px 4px;border-radius:6px;}
+.rm-legend-panel{position:sticky;top:74px;display:flex;flex-direction:column;gap:10px;min-width:0;}
+.rm-side-card{background:#fff;border:1px solid #E4D8C7;border-radius:14px;box-shadow:0 2px 10px rgba(61,43,10,.06);padding:13px 14px;}
+.rm-side-title{font-size:11px;font-weight:900;letter-spacing:1.4px;text-transform:uppercase;color:#7A4C12;margin-bottom:9px;}
+.rm-legend-row{display:grid;grid-template-columns:30px 1fr;align-items:center;gap:8px;font-size:11.6px;color:#3D2B0A;font-weight:800;margin-bottom:7px;line-height:1.2;}
+.rm-symbol{height:20px;display:flex;align-items:center;justify-content:center;}
+.rm-sym-diamond{width:14px;height:14px;background:#111;transform:rotate(45deg);}
+.rm-sym-bar{width:28px;height:8px;border-radius:4px;background:#2E8B6A;}
+.rm-sym-benefit{width:28px;height:8px;border-radius:4px;background:#9DD9B8;border:1px solid #4EA978;}
+.rm-sym-phase{width:28px;height:8px;border-radius:4px;background:#F6DEC1;border:1px solid #D59B49;}
+.rm-sym-project{width:31px;height:12px;border-radius:999px;background:#2E8B6A;position:relative;border:1px solid rgba(46,139,106,.45);overflow:hidden;}
+.rm-sym-project::before{content:'';position:absolute;left:3px;right:3px;top:3px;height:4px;border-radius:999px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.55) 0,rgba(255,255,255,.55) 3px,rgba(255,255,255,.18) 3px,rgba(255,255,255,.18) 6px);}
+.rm-sym-project::after{content:'F1–F5';position:absolute;right:-9px;top:14px;font-size:7.5px;font-weight:900;color:#2E8B6A;background:#fff;border:1px solid #B8D8CB;border-radius:999px;padding:1px 4px;line-height:1;}
+.rm-sym-dep{width:30px;height:18px;position:relative;}
+.rm-sym-dep::before{content:'';position:absolute;left:2px;top:12px;width:18px;border-top:2px dashed #D71920;}
+.rm-sym-dep::after{content:'';position:absolute;left:20px;top:4px;width:0;height:8px;border-left:2px dashed #D71920;border-top:2px dashed transparent;}
+.rm-sym-dep i{position:absolute;right:1px;top:2px;width:0;height:0;border-left:7px solid #D71920;border-top:4px solid transparent;border-bottom:4px solid transparent;}
+.rm-sym-riskbox{width:28px;height:10px;border-radius:6px;background:#FFF7ED;border:1.5px solid #F4B45C;}
+.rm-sym-riskline{width:30px;height:0;border-top:2px dashed #C27A0A;position:relative;}
+.rm-sym-riskline::after{content:'›';position:absolute;right:-3px;top:-12px;color:#C27A0A;font-size:18px;}
+.rm-sym-issue{padding:3px 7px;border-radius:6px;background:#FAF7F1;border:1px dashed #D8C8B8;color:#9A8A70;font-size:8.5px;font-weight:800;}
+
+.rm-sym-dash{width:30px;height:0;border-top:2px dashed #D71920;position:relative;}
+.rm-sym-dash::after{content:'›';position:absolute;right:-3px;top:-12px;color:#D71920;font-size:18px;}
+.rm-sym-pill{padding:3px 8px;border-radius:6px;background:#ECFDF5;border:1px solid #2BA24C;color:#065F46;font-size:9px;font-weight:900;}
+.rm-sym-risk{width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:15px solid #C27A0A;}
+.rm-sym-imp{width:26px;height:10px;border-radius:6px;background:#EFF6FF;border:1.5px solid #7DD3FC;transform:none;}
+.rm-detail-kicker{font-size:9.5px;color:#9A8A70;font-weight:900;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:4px;}
+.rm-detail-title{font-size:14px;color:#3D2B0A;font-weight:900;line-height:1.2;margin-bottom:6px;}
+.rm-detail-text{font-size:11.8px;color:#6D604F;line-height:1.42;margin-bottom:8px;}
+.rm-detail-meta{font-size:10.5px;background:#FAF7F1;border-radius:8px;padding:7px 8px;color:#5C3D12;line-height:1.3;border:1px solid #EEE4D6;margin-bottom:8px;}
+.rm-rel-block{display:grid;grid-template-columns:1fr;gap:5px;margin:7px 0 8px;}
+.rm-rel-line{background:#FFF7ED;border:1px solid #E6D7C2;border-radius:8px;padding:6px 7px;}
+.rm-rel-label{font-size:8.8px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#9A5A0A;margin-bottom:4px;}
+.rm-rel-tags{display:flex;flex-wrap:wrap;gap:4px;}
+.rm-rel-tag{font-size:9.8px;font-weight:900;color:#3D2B0A;background:#fff;border:1px solid #E4D8C7;border-radius:999px;padding:3px 7px;}
+.rm-detail-actions{display:flex;gap:6px;flex-wrap:wrap;}
+.rm-detail-btn{border:none;border-radius:8px;background:#3D2B0A;color:#FFF7E6;font-size:10.7px;font-weight:900;padding:6px 9px;cursor:pointer;font-family:'Nunito',sans-serif;}
+.rm-detail-btn.secondary{background:#FFF7ED;color:#7A4C12;border:1px solid #E6D7C2;}
+.rm-read-box{margin-top:10px;background:#FFF7ED;border:1px solid #E4D8C7;border-radius:12px;padding:10px 12px;color:#5C3D12;font-size:11.8px;line-height:1.42;}
+
+.rm-link-svg{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:visible;}.rm-link-svg.paths{z-index:5;}.rm-link-svg.labels{z-index:10;}
+.rm-link-path{fill:none;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round;opacity:.78;}
+.rm-link-path.dep{stroke:#D71920;stroke-dasharray:7 6;}
+.rm-link-path.risk{stroke:#C27A0A;stroke-dasharray:5 5;}
+.rm-link-path.gate{stroke:#111827;stroke-dasharray:0;opacity:.48;}
+.rm-link-path.imp{stroke:#0E7490;stroke-dasharray:6 4;}
+.rm-link-label{font-size:9.8px;font-weight:900;font-family:'Nunito',sans-serif;paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round;}
+.rm-link-label.dep{fill:#B91C1C}.rm-link-label.risk{fill:#92400E}.rm-link-label.gate{fill:#111827}.rm-link-label.imp{fill:#075985}
+
+.rm-link-path.dep{stroke-width:1.8;opacity:.72;}
+.rm-link-path.risk,.rm-link-path.imp{opacity:.9;}
+.rm-link-svg.paths{z-index:5;}
+.rm-link-svg.labels{z-index:11;}
+.rm-dep-badge{font-size:9.4px;font-weight:900;font-family:'Nunito',sans-serif;paint-order:stroke;stroke:#fff;stroke-width:4px;stroke-linejoin:round;fill:#B91C1C;}
+
+.rm-item.link-focus{box-shadow:0 0 0 2px rgba(215,25,32,.26),0 6px 16px rgba(0,0,0,.14);}
+
+@media(max-width:1180px){.rm-overview,.rm-main-grid{grid-template-columns:1fr}.rm-legend-panel{position:static;display:grid;grid-template-columns:1fr 1fr}.rm-components-list{grid-template-columns:repeat(2,minmax(0,1fr));}.rm-timeline-top,.rm-lane{grid-template-columns:132px minmax(0,1fr)}.rm-lane-label{padding:8px}.rm-lane-name{font-size:11.3px}.rm-item{font-size:10.1px;padding:4px 6px;}}
+@media(max-width:760px){.roadmap-header{padding:15px 18px}.rm-body{padding:12px}.rm-overview,.rm-main-grid,.rm-legend-panel{grid-template-columns:1fr}.rm-components-list,.rm-mini-grid{grid-template-columns:1fr}.rm-timeline-top{display:none}.rm-lane{grid-template-columns:1fr}.rm-lane-label{border-right:none;border-bottom:1px solid #E6D7C2}.rm-track{height:var(--lane-h-mobile,96px)}.rm-item{font-size:10px;}.rm-item.hito span:last-child{display:none}}
+
 </style>
 </head>
 <body>
@@ -418,6 +1042,7 @@ tr:last-child td{border-bottom:none}tr:nth-child(even) td{background:var(--cream
   <div class="nav-tabs">
     <button class="nav-tab active" id="tab-bc" onclick="showSection('bc')">📋 Business Case</button>
     <button class="nav-tab" id="tab-arch" onclick="showSection('arch')">🗺 Arquitectura del Programa</button>
+    <button class="nav-tab" id="tab-roadmap" onclick="showSection('roadmap')">🧭 Roadmap del Programa</button>
   </div>
 </nav>
 
@@ -731,12 +1356,16 @@ tr:last-child td{border-bottom:none}tr:nth-child(even) td{background:var(--cream
     </div>
 
   </div>
-</div
 </div>
 
 <!-- ARCH SECTION -->
 <div id="arch-section">
   <div id="arch-inner"></div>
+</div>
+
+<!-- ROADMAP SECTION -->
+<div id="roadmap-section">
+  <div id="roadmap-inner"></div>
 </div>
 
 <!-- CELL MODAL -->
@@ -817,7 +1446,7 @@ let activeDepCell=null,showCritPath=false,activeCritPath=null;
 function h(tag,attrs,children){
   var el=document.createElement(tag);
   if(attrs) Object.keys(attrs).forEach(k=>{
-    if(k==='style'&&typeof attrs[k]==='object'){Object.assign(el.style,attrs[k]);}
+    if(k==='style'&&typeof attrs[k]==='object'){Object.keys(attrs[k]).forEach(function(sk){ if(sk.indexOf('--')===0) el.style.setProperty(sk, attrs[k][sk]); else el.style[sk]=attrs[k][sk]; });}
     else if(k==='className'){el.className=attrs[k];}
     else if(k.startsWith('on')&&typeof attrs[k]==='function'){el.addEventListener(k.slice(2).toLowerCase(),attrs[k]);}
     else{el.setAttribute(k,attrs[k]);}
@@ -905,7 +1534,7 @@ function renderMatrix(body){
       var key=ph.id+'-'+proj.id;
       var cell=MATRIX[key];
       var st=SMAP[key]||'pa';
-      var stObj=STATUS[st];
+      var stObj=STATUS[st] || STATUS.im;
       var dim=activeFilter!=='all'&&activeFilter!==st;
       var cellEl=h('div',{
         className:'matrix-cell'+(dim?' dimmed':''),
@@ -1026,7 +1655,7 @@ function renderModal(){
   ov.className='';
   if(!openCell){ov.style.display='none';return;}
   var {ph,proj,cell,st}=openCell;
-  var stObj=STATUS[st];
+  var stObj=STATUS[st] || STATUS.im;
   ov.style.display='flex';
   box.innerHTML='';
   // Top
@@ -1100,6 +1729,7 @@ function renderGateModal(){
 
 document.addEventListener('DOMContentLoaded', function() {
   renderArch();
+  renderRoadmap();
 });
 
 
@@ -1109,7 +1739,7 @@ function cellShortLabel(key) {
   var cell = MATRIX[key];
   if (!cell) return key;
   var words = cell.obj.split(' ');
-  return words.slice(0,5).join(' ') + (words.length > 5 ? '...' : '');
+  return words.slice(0,4).join(' ') + (words.length > 4 ? '...' : '');
 }
 function projName(key) {
   var pid = key.split('-')[1];
@@ -1140,329 +1770,566 @@ function arrowSvg(color, dir) {
     + '</svg>';
 }
 
-function renderDeps(body){
-  // Controls
-  var bar=h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'10px',flexWrap:'wrap',gap:'8px'}});
-  bar.appendChild(h('div',{className:'dep-hint'},[
-    'Clic en una celda para ver sus conexiones \u2022 ',
-    h('span',{className:'dep-chip',style:{background:'#FDECED',color:'#C8102E'}},'\u25cf Origen'),
-    h('span',{className:'dep-chip',style:{background:'#ECFDF5',color:'#2E8B6A'}},'\u25cf Habilita'),
-    h('span',{className:'dep-chip',style:{background:'#EFF6FF',color:'#2563A8'}},'\u25cf Depende de'),
-  ]));
-  var bg=h('div',{style:{display:'flex',gap:'8px'}});
-  bg.appendChild(h('button',{
-    style:{padding:'6px 14px',borderRadius:'8px',border:'1px solid '+(showCritPath?'#C8102E':'#D4C9B4'),
-      background:showCritPath?'#FDECED':'#fff',color:showCritPath?'#9E0C24':'#7A6A50',
-      fontFamily:'inherit',fontSize:'12px',fontWeight:'700',cursor:'pointer'},
-    onclick:function(){showCritPath=!showCritPath;activeDepCell=null;activeCritPath=null;renderArch();}
-  },showCritPath?'\u2715 Cerrar rutas':'\u29c6 Rutas criticas'));
-  if(activeDepCell&&!showCritPath){
-    bg.appendChild(h('button',{
-      style:{padding:'6px 12px',borderRadius:'8px',border:'1px solid #D4C9B4',background:'#fff',
-        color:'#7A6A50',fontFamily:'inherit',fontSize:'12px',fontWeight:'600',cursor:'pointer'},
-      onclick:function(){activeDepCell=null;renderArch();}
-    },'Limpiar'));
-  }
-  bar.appendChild(bg); body.appendChild(bar);
+const DEP_ARCH_ROWS=[
+  {proj:'P1', capability:['Claridad estratégica del programa','Base única de medición y trazabilidad','Control ejecutivo para decisiones'],
+   transition:['Alineación con sponsor y punto de partida real','Consolidación de baseline, metas y umbrales','Dossiers ejecutivos por gate y lectura de valor'],
+   outcome:['Propósito y baseline validados','Metas refinadas y scorecard activo','Decisión ejecutiva basada en evidencia'],
+   benefits:['Menor ambigüedad de arranque','Escalar, ajustar o cerrar con criterio'],
+   dependsOn:[], enables:['P2','P3','P5']},
+  {proj:'P2', capability:['Consistencia operativa mínima','Estándar entrenable y auditable','Paquete replicable de operación'],
+   transition:['Inventario SGI-operación y brechas documentales','Diseño del manual, checklist y guía de adaptación','Auditoría formativa, entrenamiento y ajuste final con evidencia'],
+   outcome:['Modelo operativo listo para pilotaje','Uso consistente del estándar en sede','Estandarización lista para réplica'],
+   benefits:['Reducir variabilidad operativa','Mejor consistencia entre sedes'],
+   dependsOn:['P1'], enables:['P3','P4','P5']},
+  {proj:'P3', capability:['Autonomía con control','Gobernanza explícita y replicable','Rutas claras de decisión y escalamiento'],
+   transition:['Diagnóstico de roles, vacíos y decisiones críticas','Diseño y aprobación de MAD, gates y tablero mínimo','Puesta en uso del modelo y ajuste fino con resultados del piloto'],
+   outcome:['Gobernanza lista para operar','Modelo de decisión usado en la realidad','Gobierno validado para réplica'],
+   benefits:['Menor dependencia del criterio informal','Mejor articulación y control interáreas'],
+   dependsOn:['P1','P2'], enables:['P4','P5']},
+  {proj:'P4', capability:['Cambio integrado al modelo','Apropiación cultural y operativa','Adopción sostenible del programa'],
+   transition:['Diagnóstico de impactos y narrativa de cambio','Diseño de formación, onboarding y sponsorship','Acompañamiento, resistencias y verificación de sostenibilidad'],
+   outcome:['Actores preparados para nuevas reglas','Nivel mínimo de adopción para validar en piloto','Señal de que la cultura soporta el crecimiento'],
+   benefits:['Preservar coherencia cultural','Reducir resistencia y fricción de adopción'],
+   dependsOn:['P2','P3'], enables:['P5']},
+  {proj:'P5', capability:['Piloto medible y gobernable','Readiness integral de sede','Evidencia de replicabilidad'],
+   transition:['Diseño del piloto desde etapas tempranas','Preparación formal con RACI, KPIs y readiness','Ejecución, medición, lecciones aprendidas y propuesta de réplica'],
+   outcome:['Piloto listo bajo gobierno y medición','Resultados comparables versus baseline','Base para réplica controlada'],
+   benefits:['Escalamiento basado en evidencia','Menor riesgo de expansión'],
+   dependsOn:['P1','P2','P3','P4'], enables:[]}
+];
 
-  if(showCritPath){
-    var cpBar=h('div',{className:'cp-bar'});
-    CRIT_PATHS.forEach(function(cp){
-      var on=activeCritPath===cp.id;
-      cpBar.appendChild(h('button',{
-        className:'cp-btn'+(on?' on':''),
-        style:{background:on?cp.color:'#fff',borderColor:on?cp.color:'#D4C9B4',color:on?'#fff':'#7A6A50'},
-        onclick:function(){activeCritPath=on?null:cp.id;renderArch();}
-      },[h('span',{className:'cp-sw',style:{background:cp.color}}),cp.label]));
-    });
-    body.appendChild(cpBar);
-  }
-
-  // Matrix
-  var mWrap=h('div',{className:'matrix-wrap'});
-  var grid=h('div',{className:'matrix-grid',id:'dep-grid'});
-  mWrap.appendChild(grid); body.appendChild(mWrap);
-
-  // Compute active sets
-  var selDeps=activeDepCell?getDepsForCell(activeDepCell):null;
-  var enabKeys=selDeps?selDeps.enables.map(function(d){return d.to;})  :[];
-  var depKeys= selDeps?selDeps.dependsOn.map(function(d){return d.from;}):[];
-  var critKeyMap={};
-  if(showCritPath){
-    var aPaths=activeCritPath?CRIT_PATHS.filter(function(c){return c.id===activeCritPath;}):CRIT_PATHS;
-    aPaths.forEach(function(cp){cp.keys.forEach(function(k){critKeyMap[k]=(critKeyMap[k]||[]).concat(cp.color);});});
-  }
-  var hasSel=activeDepCell!==null||showCritPath;
-
-  // Phase headers
-  var phRow=h('div',{className:'phase-header-row'},[h('div',{})]);
-  PHASES.forEach(function(ph,i){
-    phRow.appendChild(h('div',{className:'phase-hdr',style:{background:'hsl('+(32+i*8)+','+(55+i*4)+'%,'+(88-i*2)+'%)'}},[
-      h('div',{className:'phase-hdr-id'},ph.id),h('div',{className:'phase-hdr-name'},ph.name)
-    ]));
-  });
-  grid.appendChild(phRow);
-
-  PROJ.forEach(function(proj){
-    var row=h('div',{className:'proj-row'});
-    row.appendChild(h('div',{className:'proj-label',style:{borderLeft:'4px solid '+proj.color}},[
-      h('div',{className:'proj-id',style:{color:proj.color}},proj.id),
-      h('div',{className:'proj-name'},proj.name)
-    ]));
-    PHASES.forEach(function(ph){
-      var key=ph.id+'-'+proj.id;
-      var cell=MATRIX[key];
-      var st=SMAP[key]||'pa';
-      var stObj=STATUS[st];
-      var ds='d-normal', badgeLbl='', badgeCls='';
-      if(activeDepCell===key){ds='d-origin';badgeLbl='ORIGEN';badgeCls='bo';}
-      else if(enabKeys.indexOf(key)>-1){ds='d-enables';badgeLbl='HABILITA';badgeCls='be';}
-      else if(depKeys.indexOf(key)>-1){ds='d-depends';badgeLbl='DEPENDE DE';badgeCls='bd';}
-      else if(showCritPath&&critKeyMap[key]){ds='d-crit';badgeLbl='EN RUTA';badgeCls='br';}
-      else if(hasSel){ds='d-idle';}
-      var bord=hasSel&&ds==='d-crit'?'2px solid '+(critKeyMap[key]?critKeyMap[key][0]:'#ccc'):'1px solid '+proj.border;
-      var footKids=[h('span',{className:'cell-count',style:{fontSize:'9px',color:'#7A6A50'}},cell?(cell.del.length+' ent.'):'')];
-      if(badgeLbl) footKids.push(h('span',{className:'dep-badge '+badgeCls},badgeLbl));
-      else footKids.push(h('span',{className:'status-badge',style:{background:stObj.bg,color:stObj.txt,fontSize:'9px',padding:'2px 6px',borderRadius:'6px',fontWeight:'700'}},(st==='ex'?'\u2713':st==='pa'?'~':'!')+' '+stObj.lbl.split(' ')[0]));
-      var cellEl=h('div',{
-        className:'dcell matrix-cell '+ds,
-        style:{background:proj.light,border:bord,minHeight:'88px',display:'flex',flexDirection:'column',justifyContent:'space-between',padding:'9px'},
-        'data-depkey':key,
-        onclick:function(){if(!showCritPath){activeDepCell=activeDepCell===key?null:key;renderArch();}}
-      },[h('div',{style:{fontSize:'10px',color:'#3D2B0A',lineHeight:'1.4',fontWeight:'600',flex:'1'}},cell?cell.obj:''),h('div',{className:'cell-foot'},footKids)]);
-      row.appendChild(cellEl);
-    });
-    grid.appendChild(row);
-  });
-
-  var gRow=h('div',{className:'gates-row'},[h('div',{className:'gates-label'},'Gates')]);
-  PHASES.forEach(function(ph){
-    gRow.appendChild(h('div',{style:{display:'flex',justifyContent:'center'}},
-      h('button',{className:'gate-btn',onclick:function(){openGate=GATES[ph.id];renderArch();}},GATES[ph.id].id)
-    ));
-  });
-  grid.appendChild(gRow);
-
-  // Legend
-  var leg=h('div',{className:'matrix-legend',style:{marginTop:'14px'}});
-  [['Origen','#C8102E'],['Habilita','#2E8B6A'],['Depende de','#2563A8']].forEach(function(it){
-    leg.appendChild(h('div',{className:'legend-item'},[
-      h('div',{style:{width:'12px',height:'12px',borderRadius:'3px',border:'2px solid '+it[1],flexShrink:0,background:it[1]+'15'}}),it[0]
-    ]));
-  });
-  PROJ.forEach(function(p){
-    leg.appendChild(h('div',{className:'legend-item'},[h('div',{className:'legend-dot',style:{background:p.color}}),p.id+' \u2013 '+p.name]));
-  });
-  body.appendChild(leg);
-
-  // ── DEPENDENCY DIAGRAM PANEL (pure CSS, no SVG arrows) ──
-  if(activeDepCell&&!showCritPath){
-    var info=getDepsForCell(activeDepCell);
-    var pj=PROJ.find(function(p){return activeDepCell.split('-')[1]===p.id;});
-    var phN=PHASES.find(function(p){return activeDepCell.split('-')[0]===p.id;});
-    var cd=MATRIX[activeDepCell];
-
-    var panel=h('div',{className:'dep-panel-v5'});
-
-    // Header
-    var hd=h('div',{className:'dp5-header'});
-    hd.appendChild(h('div',{className:'dp5-cell-info'},[
-      h('span',{className:'dp5-key',style:{background:pj?pj.color:'#888'}},activeDepCell),
-      h('div',{className:'dp5-meta'},[
-        h('div',{className:'dp5-proj'},pj?pj.name:''),
-        h('div',{className:'dp5-phase'},phN?phN.name:''),
-      ])
-    ]));
-    hd.appendChild(h('div',{className:'dp5-obj'},cd?cd.obj:''));
-    hd.appendChild(h('div',{className:'dp5-counts'},[
-      h('span',{className:'dp5-count',style:{background:'#DBEAFE',color:'#1E40AF'}},'Depende de: '+info.dependsOn.length),
-      h('span',{className:'dp5-count',style:{background:'#D1FAE5',color:'#065F46'}},'Habilita: '+info.enables.length),
-    ]));
-    panel.appendChild(hd);
-
-    // Diagram body: [depends-on] → [ORIGIN] → [enables]
-    var maxRows = Math.max(info.dependsOn.length, info.enables.length, 1);
-    var diag = h('div',{style:{
-      display:'flex', alignItems:'stretch', gap:'0',
-      padding:'20px 16px', background:'#FAFAF8', minHeight:'100px'
-    }});
-
-    // LEFT column: "depende de"
-    var leftCol = h('div',{style:{flex:'1',display:'flex',flexDirection:'column',gap:'8px',justifyContent:'center',alignItems:'flex-end'}});
-    if(info.dependsOn.length===0){
-      leftCol.appendChild(h('div',{style:{fontSize:'11px',color:'#C9B990',fontStyle:'italic',textAlign:'right',paddingRight:'8px'}},'Sin dependencias\nde entrada'));
-    } else {
-      info.dependsOn.forEach(function(d){
-        var tc=d.type==='critical'?'type-crit':d.type==='high'?'type-high':'type-med';
-        var col=projColor(d.from);
-        var card=h('div',{className:'dp5-card '+tc,
-          style:{borderColor:col+'55',background:col+'0D',cursor:'pointer'},
-          onclick:function(){activeDepCell=d.from;renderArch();}
-        },[
-          h('div',{className:'dp5-card-key',style:{color:col}},d.from),
-          h('div',{className:'dp5-card-lbl'},cellShortLabel(d.from)),
-          h('span',{className:'dp5-tag '+(d.type==='critical'?'tc':d.type==='high'?'th':'tm')},
-            d.type==='critical'?'Critica':d.type==='high'?'Alta':'Media')
-        ]);
-        leftCol.appendChild(card);
-      });
-    }
-    diag.appendChild(leftCol);
-
-    // Arrow: depends → origin
-    var arrLeft = h('div',{style:{display:'flex',alignItems:'center',padding:'0 4px',flexShrink:0}});
-    arrLeft.innerHTML = arrowSvg('#2563A8','right');
-    diag.appendChild(arrLeft);
-
-    // CENTER: origin
-    var center = h('div',{style:{display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,padding:'0 4px'}});
-    var oc = h('div',{className:'dp5-origin-card'});
-    oc.appendChild(h('div',{className:'dp5-ok'},'ORIGEN'));
-    oc.appendChild(h('div',{className:'dp5-on'},pj?pj.name:''));
-    oc.appendChild(h('div',{className:'dp5-op'},phN?phN.name:''));
-    center.appendChild(oc);
-    diag.appendChild(center);
-
-    // Arrow: origin → enables
-    var arrRight = h('div',{style:{display:'flex',alignItems:'center',padding:'0 4px',flexShrink:0}});
-    arrRight.innerHTML = arrowSvg('#C8102E','right');
-    diag.appendChild(arrRight);
-
-    // RIGHT column: "habilita"
-    var rightCol = h('div',{style:{flex:'1',display:'flex',flexDirection:'column',gap:'8px',justifyContent:'center',alignItems:'flex-start'}});
-    if(info.enables.length===0){
-      rightCol.appendChild(h('div',{style:{fontSize:'11px',color:'#C9B990',fontStyle:'italic',paddingLeft:'8px'}},'Sin salidas\ndirectas'));
-    } else {
-      info.enables.forEach(function(d){
-        var tc=d.type==='critical'?'type-crit':d.type==='high'?'type-high':'type-med';
-        var col=projColor(d.to);
-        var card=h('div',{className:'dp5-card '+tc,
-          style:{borderColor:col+'55',background:col+'0D',cursor:'pointer'},
-          onclick:function(){activeDepCell=d.to;renderArch();}
-        },[
-          h('div',{className:'dp5-card-key',style:{color:col}},d.to),
-          h('div',{className:'dp5-card-lbl'},cellShortLabel(d.to)),
-          h('span',{className:'dp5-tag '+(d.type==='critical'?'tc':d.type==='high'?'th':'tm')},
-            d.type==='critical'?'Critica':d.type==='high'?'Alta':'Media')
-        ]);
-        rightCol.appendChild(card);
-      });
-    }
-    diag.appendChild(rightCol);
-    panel.appendChild(diag);
-
-    // Footer hint
-    var fhint = h('div',{style:{padding:'10px 16px',background:'#F7F4EF',fontSize:'11px',color:'#9A8A70',borderTop:'1px solid #F0EDE7'}},
-      '\u2139\ufe0f Haz clic en cualquier tarjeta del diagrama para navegar a esa celda');
-    panel.appendChild(fhint);
-
-    // ── VALUE CHAIN SECTION ──
-    var vcSec = h('div',{className:'dp5-vc-section'});
-    vcSec.appendChild(h('div',{className:'dp5-vc-title'},[
-      h('span',{style:{width:'20px',height:'3px',background:'linear-gradient(90deg,#C8102E,#C27A0A,#2E8B6A)',borderRadius:'2px',display:'inline-block'}}),
-      'Cadena de valor que instala esta fase'
-    ]));
-
-    var flow = h('div',{className:'dp5-vc-flow'});
-
-    function vcArrow(color) {
-      var d = h('div',{className:'dp5-vc-arr'});
-      d.innerHTML = '<svg viewBox="0 0 28 16" fill="none"><polyline points="2,8 22,8 17,3 22,8 17,13" stroke="'+color+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-      return d;
-    }
-
-    // Block 1: Fase / Outputs
-    var b1 = h('div',{className:'dp5-vc-block vc-fase'});
-    b1.appendChild(h('div',{className:'dp5-vc-block-lbl'},'\ud83d\udce6 Fases / Outputs'));
-    b1.appendChild(h('div',{className:'dp5-vc-block-txt'},pj?pj.name+' \u00b7 '+(phN?phN.name:''):''));
-    if(cd&&cd.del){
-      var chips = h('div',{className:'dp5-del-chips'});
-      cd.del.slice(0,3).forEach(function(d){
-        chips.appendChild(h('span',{className:'dp5-del-chip'},d));
-      });
-      if(cd.del.length>3) chips.appendChild(h('span',{className:'dp5-del-chip',style:{color:'#9A8A70'}},'+' +(cd.del.length-3)+' m\u00e1s\u2026'));
-      b1.appendChild(chips);
-    }
-    flow.appendChild(b1);
-    flow.appendChild(vcArrow('#B5620A'));
-
-    // Block 2: Capability
-    var b2 = h('div',{className:'dp5-vc-block vc-cap'});
-    b2.appendChild(h('div',{className:'dp5-vc-block-lbl'},'\u26a1 Capability instalada'));
-    b2.appendChild(h('div',{className:'dp5-vc-block-txt'},cd?cd.cap:''));
-    b2.appendChild(h('div',{className:'dp5-vc-block-sub'},'Mecanismo: '+(cd?cd.mec:'')));
-    flow.appendChild(b2);
-    flow.appendChild(vcArrow('#065F46'));
-
-    // Block 3: Outcome
-    var b3 = h('div',{className:'dp5-vc-block vc-out'});
-    b3.appendChild(h('div',{className:'dp5-vc-block-lbl'},'\u2714 Outcome esperado'));
-    b3.appendChild(h('div',{className:'dp5-vc-block-txt'},cd?cd.out:''));
-    flow.appendChild(b3);
-    flow.appendChild(vcArrow('#92400E'));
-
-    // Block 4: Beneficio
-    var b4 = h('div',{className:'dp5-vc-block vc-ben'});
-    b4.appendChild(h('div',{className:'dp5-vc-block-lbl'},'\u2605 Beneficio habilitado'));
-    b4.appendChild(h('div',{className:'dp5-vc-block-txt'},cd?cd.ben:''));
-    flow.appendChild(b4);
-    vcSec.appendChild(flow);
-
-    // What capabilities the cells it enables will install
-    if(info.enables.length){
-      var ecWrap = h('div',{className:'dp5-enables-chain'});
-      ecWrap.appendChild(h('div',{className:'dp5-enables-chain-title'},'\u21aa Capabilities que habilita en los componentes siguientes'));
-      info.enables.forEach(function(d){
-        var nextCell = MATRIX[d.to];
-        if(!nextCell) return;
-        var pjNext = PROJ.find(function(p){return d.to.split('-')[1]===p.id;});
-        var row = h('div',{className:'dp5-ec-row'});
-        row.appendChild(h('span',{className:'dp5-ec-key'},d.to));
-        row.appendChild(h('span',{className:'dp5-ec-arr'},'\u2192'));
-        var right = h('div',{style:{flex:'1'}});
-        right.appendChild(h('div',{className:'dp5-ec-cap'},nextCell.cap));
-        right.appendChild(h('div',{style:{fontSize:'10px',color:'#9A8A70',marginTop:'2px'}},nextCell.out));
-        row.appendChild(right);
-        ecWrap.appendChild(row);
-      });
-      vcSec.appendChild(ecWrap);
-    }
-
-    panel.appendChild(vcSec);
-    body.appendChild(panel);
-  }
-
-  // ── CRITICAL PATH PANEL ──
-  if(showCritPath){
-    var allPaths = activeCritPath ? CRIT_PATHS.filter(function(c){return c.id===activeCritPath;}) : CRIT_PATHS;
-    allPaths.forEach(function(cp){
-      var cpP = h('div',{className:'dp5-cp-panel',style:{borderTop:'4px solid '+cp.color}});
-      cpP.appendChild(h('div',{className:'cp-chain-title',style:{color:cp.color}},cp.label));
-      cpP.appendChild(h('div',{className:'cp-chain-desc'},cp.desc));
-      var chain = h('div',{className:'cp-chain'});
-      cp.keys.forEach(function(k,i){
-        var col=projColor(k);
-        chain.appendChild(h('div',{
-          className:'cp-chain-node',
-          style:{color:cp.color,borderColor:cp.color,background:cp.color+'10',cursor:'pointer'},
-          onclick:function(){showCritPath=false;activeDepCell=k;renderArch();}
-        },k));
-        if(i<cp.keys.length-1){
-          chain.appendChild(h('span',{className:'cp-chain-arrow',style:{color:cp.color}},'\u2192'));
-        }
-      });
-      cpP.appendChild(chain);
-      body.appendChild(cpP);
-    });
-  }
+function depStepCard(key){
+  var cell=MATRIX[key] || {obj:''};
+  return h('button',{
+    className:'dep-phase-node dep-clickable',
+    'data-dep-key': key,
+    title:(cell.obj ? (key.toLowerCase()+' · '+cell.obj) : key)
+  },[
+    h('span',{className:'dep-phase-bullet'}),
+    h('span',{className:'dep-phase-key'},key.toLowerCase())
+  ]);
 }
+
+function openMatrixCell(key){
+  var cell=MATRIX[key];
+  if(!cell) return;
+  var parts=key.split('-');
+  var ph=PHASES.find(function(p){return p.id===parts[0];});
+  var proj=PROJ.find(function(p){return p.id===parts[1];});
+  var st=SMAP[key] || 'im';
+  openCell={key:key,ph:ph,proj:proj,cell:cell,st:st};
+  renderModal();
+}
+
+function renderDeps(body){
+  function uniqIncomingForProject(projId){
+    var seen={};
+    return DEPS.filter(function(d){
+      return d.to.split('-')[1]===projId && d.from.split('-')[1]!==projId;
+    }).filter(function(d){
+      var k=d.from+'|'+d.type;
+      if(seen[k]) return false; seen[k]=1; return true;
+    }).sort(function(a,b){
+      var ord={critical:0,high:1,medium:2};
+      return (ord[a.type]||9)-(ord[b.type]||9) || a.from.localeCompare(b.from);
+    });
+  }
+
+  body.appendChild(h('div',{className:'dep-arch-wrap'},[
+    h('div',{className:'dep-arch-head'},[
+      h('div',{className:'dep-arch-title'},'Dependencias por componente y cadena de habilitación'),
+      h('div',{className:'dep-arch-sub'},'La lectura se simplifica así: cada componente muestra sus fases en código corto, luego la capacidad que instala, la transición que activa y el beneficio que habilita. Si una capacidad depende de fases de otros proyectos, esas entradas aparecen explícitamente dentro del bloque de capability.'),
+      h('div',{className:'dep-arch-legend'},[
+        h('span',{className:'dep-pill',style:{background:'#FFF7ED',color:'#9A5B13'}},'Fases por código corto y clicables'),
+        h('span',{className:'dep-pill',style:{background:'#EFF6FF',color:'#1E40AF'}},'Entradas desde otras fases'),
+        h('span',{className:'dep-pill',style:{background:'#ECFDF5',color:'#065F46'}},'Capability instalada'),
+        h('span',{className:'dep-pill',style:{background:'#FFFDF8',color:'#9A5B13'}},'Transición requerida'),
+        h('span',{className:'dep-pill',style:{background:'#FDF2F8',color:'#9D174D'}},'Beneficio habilitado')
+      ])
+    ]),
+    h('div',{className:'dep-arch-tablewrap'},(function(){
+      var grid=h('div',{className:'dep-arch-grid v6'});
+      ['COMPONENTES','FASES / OUTPUTS','CAPABILITY','TRANSICIÓN','BENEFICIO HABILITADO'].forEach(function(t){
+        grid.appendChild(h('div',{className:'dep-arch-h'+(t?'':' blank')},t));
+      });
+      DEP_ARCH_ROWS.forEach(function(r){
+        var proj=PROJ.find(function(p){return p.id===r.proj;});
+        var incoming=uniqIncomingForProject(r.proj);
+        var comp=h('div',{className:'dep-arch-cell v6 dep-linked'},[
+          h('div',{className:'dep-comp'},[
+            h('div',{className:'dep-comp-badge',style:{background:proj.color}},proj.id),
+            h('div',{className:'dep-comp-name'},proj.name),
+            h('div',{className:'dep-comp-lead'},'Lidera: '+proj.lead),
+            h('div',{className:'dep-meta-note'},'Este componente recorre F1 a F5 y aporta una parte específica de la arquitectura del programa.')
+          ])
+        ]);
+
+        var route=h('div',{className:'dep-arch-cell v6 dep-linked'},[
+          h('div',{className:'dep-cell-title'},'Secuencia de fases'),
+          h('div',{className:'dep-phase-chain'}, PHASES.map(function(ph){ return depStepCard(ph.id+'-'+proj.id); })),
+          h('div',{className:'dep-mini-actions v6'},[
+            h('button',{className:'dep-open-btn sm',onclick:function(){openMatrixCell('F1-'+proj.id);}},'Abrir inicio'),
+            h('button',{className:'dep-open-btn sm',onclick:function(){openMatrixCell('F5-'+proj.id);}},'Abrir cierre')
+          ])
+        ]);
+
+        var cap=h('div',{className:'dep-arch-cell v6 dep-linked'},[
+          h('div',{className:'dep-cell-title'},'Capability instalada'),
+          h('div',{className:'dep-stack'}, r.capability.map(function(x){return h('div',{className:'dep-stack-card cap'},x);} )),
+          h('div',{className:'dep-input-box'},[
+            h('div',{className:'dep-input-title'},'Entradas desde otras fases'),
+            h('div',{className:'dep-input-chips'}, incoming.length ? incoming.map(function(d){
+              return h('button',{className:'dep-in-chip dep-clickable '+d.type,'data-dep-key':d.from,title:d.label},[
+                h('span',{className:'dep-chip-sev'}, d.type==='critical'?'!':(d.type==='high'?'↑':'·')),
+                h('span',{}, d.from)
+              ]);
+            }) : [h('span',{className:'dep-in-chip'},'Sin entradas cruzadas relevantes')]),
+            h('div',{className:'dep-meta-note'}, incoming.length ? 'Estas fases de otros proyectos alimentan o condicionan la capacidad de '+proj.id+'.' : 'La capacidad de este componente depende principalmente de su propia secuencia interna.')
+          ])
+        ]);
+
+        var trans=h('div',{className:'dep-arch-cell v6 dep-linked'},[
+          h('div',{className:'dep-cell-title'},'Transición activada'),
+          h('div',{className:'dep-flow-col'}, r.transition.map(function(x){ return h('div',{className:'dep-flow-card'},x); }))
+        ]);
+
+        var ben=h('div',{className:'dep-arch-cell v6'},[
+          h('div',{className:'dep-cell-title'},'Beneficio que habilita'),
+          h('div',{className:'dep-ben-list'}, r.benefits.map(function(x){return h('div',{className:'dep-ben-item'},x);} )),
+          h('div',{className:'dep-meta-note'},'Resultado esperado asociado: '+r.outcome.join(' · '))
+        ]);
+
+        [
+          comp,
+          route,
+          cap,
+          trans,
+          ben
+        ].forEach(function(el){grid.appendChild(el);});
+      });
+      return grid;
+    })()),
+    h('div',{className:'dep-hintbox'},[
+      h('strong',{},'Cómo leer esta pestaña: '),
+      'sigue la secuencia corta F1→F5 de cada componente, luego mira la flecha hacia capability. Si capability recibe entradas de otros proyectos, las verás como chips azules o rojos. Después la cadena continúa hacia transición y termina en el beneficio que ese componente habilita.'
+    ])
+  ]));
+}
+
+
+
+// ─── ROADMAP DEL PROGRAMA ───
+let roadmapSelected='F1';
+const ROADMAP_MONTHS=[
+  {q:'M0–M1',m:'Mes 1'},
+  {q:'M1–M2',m:'Mes 2'},
+  {q:'M2–M3',m:'Mes 3'},
+  {q:'M3–M4',m:'Mes 4'},
+  {q:'M4–M5',m:'Mes 5'},
+  {q:'M5–M6',m:'Mes 6'},
+  {q:'M6–M7',m:'Mes 7'},
+  {q:'M7–M8',m:'Mes 8'}
+];
+const ROADMAP_PHASES=[
+  {id:'F1',label:'F1',sub:'0–1.5 M',start:0,end:1.5},
+  {id:'F2',label:'F2',sub:'1–3 M',start:1,end:3},
+  {id:'F3',label:'F3',sub:'3–4.5 M',start:3,end:4.5},
+  {id:'F4',label:'F4',sub:'4–6 M',start:4,end:6},
+  {id:'F5',label:'F5',sub:'6–8 M',start:6,end:8}
+];
+const ROADMAP_COMPONENTS=[
+  {id:'arquitectura',title:'Análisis de la arquitectura del programa',note:'Conecta componentes, capacidades, fases, gates y beneficios'},
+  {id:'beneficios',title:'Plan de realización de beneficios',note:'Define beneficios, KPI, línea base y evidencia de realización'},
+  {id:'priorizacion',title:'Priorización de componentes',note:'Ordena P1 a P5 por dependencia, valor y readiness'},
+  {id:'fases',title:'Fases y principales entregables',note:'Alinea F1 a F5 con la duración de 8 meses del business case'},
+  {id:'dependencias',title:'Dependencias de la arquitectura',note:'Explicita qué habilita qué y qué condiciona el avance'},
+  {id:'riesgos',title:'Riesgos críticos identificados',note:'Cada riesgo queda asociado al componente, fase o gate que puede alterar'},
+  {id:'supuestos',title:'Relación de supuestos',note:'Registra condiciones de planificación que sostienen el roadmap'},
+  {id:'issues',title:'Incidencias o riesgos materializados',note:'Sin registros por ahora; se activa solo si el riesgo se materializa'},
+  {id:'impedimentos',title:'Impedimentos y bloqueantes',note:'Señala obstáculos que pueden bloquear gates o beneficios'}
+];
+const ROADMAP_LANES=[
+  {id:'beneficios',code:'01',name:'Beneficios',note:'Valor esperado · B1 a B5',h:132},
+  {id:'fases',code:'02',name:'Fases del programa',note:'F1 a F5 · 8 meses',h:146},
+  {id:'hitos',code:'03',name:'Hitos / gates',note:'Qué fase habilitan',h:62},
+  {id:'priorizacion',code:'04',name:'Componentes priorizados',note:'P1 a P5 · fase principal + rastro F1→F5',h:208},
+  {id:'riesgos',code:'05',name:'Riesgos críticos',note:'Riesgo → afectación',h:192},
+  {id:'supuestos',code:'06',name:'Supuestos',note:'Condiciones base',h:84},
+  {id:'issues',code:'07',name:'Incidencias',note:'Sin registros aún',h:52},
+  {id:'impedimentos',code:'08',name:'Impedimentos',note:'Bloqueantes / obstáculos',h:72}
+];
+const ROADMAP_ITEMS=[
+  {id:'RD-ARQ',lane:'arquitectura',type:'fase',label:'Arquitectura integrada del programa',start:0,end:1.5,y:9,detail:'Consolidación de la arquitectura del programa: componentes, fases, capacidades, transiciones, beneficios y dependencias. Es la entrada de planeación por niveles.',archTab:'deps',enables:['P1','F1','G1'],related:['P1','B1']},
+  {id:'RD-BPLAN',lane:'arquitectura',type:'fase',label:'Baseline + criterios de planeación',start:1.5,end:3.0,y:9,detail:'El baseline traduce la arquitectura en criterios de medición, umbrales y reglas de avance para el resto del programa.',archKey:'F1-P1',dependsOn:['RD-ARQ'],enables:['P2','P3','B2']},
+
+  {id:'B1',lane:'beneficios',type:'beneficio',label:'B1 Menor ambigüedad de arranque',start:.45,end:1.65,y:8,detail:'Beneficio temprano: propósito, baseline, criterios y sponsor reducen ambigüedad de arranque.',archTab:'benefits',dependsOn:['P1','G1'],enabledBy:['F1','G1']},
+  {id:'B2',lane:'beneficios',type:'beneficio',label:'B2 Reducir variabilidad operativa',start:1.8,end:3.55,y:30,detail:'Beneficio asociado a estandarización mínima, checklist crítico y guía de adaptación local.',archTab:'benefits',dependsOn:['P2','G2'],enabledBy:['F2','G2']},
+  {id:'B3',lane:'beneficios',type:'beneficio',label:'B3 Preservar coherencia cultural',start:4.0,end:6.45,y:52,detail:'Beneficio asociado a apropiación cultural, sponsorship visible y formación de líderes de sede.',archTab:'benefits',dependsOn:['P4','G4'],enabledBy:['F4','G4']},
+  {id:'B4',lane:'beneficios',type:'beneficio',label:'B4 Preparación para réplica',start:5.35,end:7.15,y:76,detail:'Beneficio intermedio: la organización llega al piloto con condiciones mínimas de readiness, roles claros y evidencia suficiente para aprender.',archTab:'benefits',dependsOn:['P4','P5','G4'],enabledBy:['F4','G4','P4']},
+  {id:'B5',lane:'beneficios',type:'beneficio',label:'B5 Escalamiento con evidencia',start:6.85,end:8.0,y:100,detail:'Beneficio final: decisión ejecutiva basada en piloto, medición contra baseline y lecciones aprendidas.',archTab:'benefits',dependsOn:['P5','G5'],enabledBy:['F5','G5']},
+
+  {id:'G1',lane:'hitos',type:'hito',label:'G1→F2',start:1.5,end:1.5,y:8,detail:'Gate 1: valida propósito, baseline y punto de partida real. Habilita F2 y el diseño controlado del estándar mínimo.',gate:'F1',enables:['F2','P2','B1']},
+  {id:'G2',lane:'hitos',type:'hito',label:'G2→F3',start:3.0,end:3.0,y:8,detail:'Gate 2: valida modelo operativo mínimo para pilotaje. Habilita F3 y reduce el riesgo de diseñar gobernanza sin estándar.',gate:'F2',enables:['F3','P3','B2'],dependsOn:['F2','P2']},
+  {id:'G3',lane:'hitos',type:'hito',label:'G3→F4',start:4.5,end:4.5,y:8,detail:'Gate 3: aprueba gobernanza, MAD y autonomías. Habilita F4 y prepara la adopción cultural.',gate:'F3',enables:['F4','P4'],dependsOn:['F3','P3']},
+  {id:'G4',lane:'hitos',type:'hito',label:'G4→F5',start:6.0,end:6.0,y:8,detail:'Gate 4: valida readiness y adopción mínima. Habilita F5 y el piloto con evidencia.',gate:'F4',enables:['F5','P5','B3'],dependsOn:['F4','P4']},
+  {id:'G5',lane:'hitos',type:'hito',label:'G5→B5',start:7.86,end:7.86,y:8,detail:'Gate 5: decisión ejecutiva de escalar, ajustar o cerrar. Habilita el beneficio final y la decisión de continuidad.',gate:'F5',enables:['B5','Decisión ejecutiva'],dependsOn:['F5','P5']},
+
+  {id:'P1',lane:'priorizacion',type:'proyecto',label:'P1',mainPhase:'F1',phaseTrail:['F1','F2','F3','F4','F5'],start:0,end:1.5,y:10,color:'#2563A8',detail:'Componente 1: fija propósito, baseline, criterios de decisión y patrocinio activo. Su fase principal es F1, pero conversa con el resto de fases del programa.',archKey:'F1-P1',enables:['F1','G1','B1']},
+  {id:'P2',lane:'priorizacion',type:'proyecto',label:'P2',mainPhase:'F2',phaseTrail:['F1','F2','F3','F4','F5'],start:1.0,end:3.0,y:44,color:'#2E8B6A',detail:'Componente 2: convierte prácticas críticas en un estándar entrenable y auditable. Su fase principal es F2, pero deja rastro en las demás fases del programa.',archKey:'F2-P2',dependsOn:['P1','G1'],enables:['F2','G2','B2']},
+  {id:'P3',lane:'priorizacion',type:'proyecto',label:'P3',mainPhase:'F3',phaseTrail:['F1','F2','F3','F4','F5'],start:3.0,end:4.5,y:78,color:'#7C3CBF',detail:'Componente 3: define reglas de decisión, autonomías, rutas de escalamiento y control. Su fase principal es F3, con efectos en las demás fases.',archKey:'F3-P3',dependsOn:['P1','P2','G2'],enables:['F3','G3']},
+  {id:'P4',lane:'priorizacion',type:'proyecto',label:'P4',mainPhase:'F4',phaseTrail:['F1','F2','F3','F4','F5'],start:4.0,end:6.0,y:112,color:'#C27A0A',detail:'Componente 4: prepara adopción, narrativa, formación y sponsorship. Su fase principal es F4 y soporta el readiness del piloto.',archKey:'F4-P4',dependsOn:['P3','G3'],enables:['F4','G4','B3','B4']},
+  {id:'P5',lane:'priorizacion',type:'proyecto',label:'P5',mainPhase:'F5',phaseTrail:['F1','F2','F3','F4','F5'],start:6.0,end:8.0,y:146,color:'#C0402A',detail:'Componente 5: valida el modelo con evidencia, beneficios y recomendación de réplica. Su fase principal es F5.',archKey:'F5-P5',dependsOn:['P2','P3','P4','G4'],enables:['F5','G5','B5']},
+
+  {id:'F1',lane:'fases',type:'fase',label:'F1 · Línea base y alineación',start:0,end:1.5,y:8,detail:'Fase 1 del business case: alineación estratégica, stakeholders, propósito, ADN no negociable y baseline.',archKey:'F1-P1',enables:['G1','F2','B1']},
+  {id:'F2',lane:'fases',type:'fase',label:'F2 · Estandarización mínima',start:1.0,end:3.0,y:34,detail:'Fase 2 del business case: manual operativo mínimo viable, estándares críticos, checklist y guía de adaptación.',archKey:'F2-P2',dependsOn:['G1','P2'],enables:['G2','F3','B2']},
+  {id:'F3',lane:'fases',type:'fase',label:'F3 · Gobernanza y MAD',start:3.0,end:4.5,y:60,detail:'Fase 3 del business case: matriz de autoridad y decisiones, gobernanza de apertura, tablero mínimo y auditorías formativas.',archKey:'F3-P3',dependsOn:['G2','P3'],enables:['G3','F4']},
+  {id:'F4',lane:'fases',type:'fase',label:'F4 · Apropiación y cambio',start:4.0,end:6.0,y:86,detail:'Fase 4 del business case: formación, change management, sponsorship visible y preparación de adopción.',archKey:'F4-P4',dependsOn:['G3','P4'],enables:['G4','F5','B3']},
+  {id:'F5',lane:'fases',type:'fase',label:'F5 · Piloto y evidencia',start:6.0,end:8.0,y:112,detail:'Fase 5 del business case: piloto, medición vs baseline, lecciones aprendidas y decisión final.',archKey:'F5-P5',dependsOn:['G4','P5'],enables:['G5','B4']},
+
+
+  {id:'R1',lane:'riesgos',type:'riesgo',label:'R1 Sponsor insuficiente',start:.2,end:1.55,y:8,detail:'Puede alterar P1 y el Gate 1 si no hay visibilidad ejecutiva, decisiones oportunas o sponsor activo.',archKey:'F1-P1',affects:['P1','G1','B1'],mitigation:'Sponsorship visible desde F1, decisiones documentadas y criterios mínimos de aprobación.'},
+  {id:'R2',lane:'riesgos',type:'riesgo',label:'R2 Sobrecarga operativa',start:1.0,end:3.2,y:38,detail:'Puede afectar la estandarización y luego el piloto si el programa compite con la operación diaria sin capacidad dedicada.',archKey:'F2-P2',affects:['P2','F2','P5'],mitigation:'Piloto acotado, entregables mínimos y ventanas de validación con responsables claros.'},
+  {id:'R3',lane:'riesgos',type:'riesgo',label:'R3 KPI débiles',start:2.2,end:4.2,y:68,detail:'Puede convertir el estándar mínimo en sobrerregulación y afectar la apropiación cultural.',archKey:'F4-P4',affects:['P2','P4','B3'],mitigation:'Estándar mínimo viable, criterios de excepción y guía de adaptación local.'},
+  {id:'R4',lane:'riesgos',type:'riesgo',label:'R4 Estandarización excesiva',start:3.2,end:5.3,y:98,detail:'Puede alterar la lectura de beneficios y la decisión final del Gate 5 si la línea base no es verificable.',archKey:'F1-P1',affects:['P1','P5','G5','B5'],mitigation:'Fuentes simples, verificables y acordadas desde F1; trazabilidad de métricas hasta F5.'},
+  {id:'R5',lane:'riesgos',type:'riesgo',label:'R5 Resistencia al cambio',start:4.0,end:6.0,y:128,detail:'Puede afectar la adopción, el readiness y la validez de los resultados del piloto.',archKey:'F4-P4',affects:['P4','G4','P5','B3'],mitigation:'Líderes involucrados desde F1, formación oportuna y acompañamiento durante F4-F5.'},
+  {id:'R6',lane:'riesgos',type:'riesgo',label:'R6 Handoffs débiles',start:5.0,end:8.0,y:158,detail:'Puede afectar la gobernanza, los traspasos entre áreas y la evidencia del piloto.',archKey:'F3-P3',affects:['P3','F3','P5','G5'],mitigation:'Responsables explícitos en interfaces críticas, gates formales y tablero mínimo de bloqueos.'},
+
+  {id:'S1',lane:'supuestos',type:'supuesto',label:'S1 Líderes clave disponibles',start:0,end:3.0,y:8,detail:'Supuesto: sponsors, líderes de sede y líderes funcionales participan en entrevistas, validaciones y gates.',affects:['P1','P2','G1','G2']},
+  {id:'S2',lane:'supuestos',type:'supuesto',label:'S2 Datos mínimos disponibles',start:0,end:8.0,y:32,detail:'Supuesto: existe información suficiente para construir baseline, KPI y comparación del piloto.',affects:['P1','P5','G5']},
+  {id:'S3',lane:'supuestos',type:'supuesto',label:'S3 Sede piloto disponible',start:4.0,end:8.0,y:56,detail:'Supuesto: la sede piloto puede participar sin afectar críticamente la operación.',affects:['P4','P5','G4','G5']},
+
+  {id:'IM1',lane:'impedimentos',type:'impedimento',label:'IM1 Brecha documental SGI-operación',start:1.5,end:3.0,y:8,detail:'Impedimento potencial: la brecha entre documentos y operación puede bloquear la estandarización mínima si no se resuelve antes de G2.',archKey:'F2-P2',affects:['P2','G2','B2'],mitigation:'Inventario documental, checklist crítico y validación operativa antes de Gate 2.'},
+  {id:'IM2',lane:'impedimentos',type:'impedimento',label:'IM2 Datos insuficientes para piloto',start:5.7,end:8.0,y:36,detail:'Impedimento potencial: si no hay medición mínima, el piloto no soportará decisión ejecutiva en G5.',archKey:'F5-P5',affects:['P5','G5','B5'],mitigation:'Acordar métricas y fuentes desde F1; validar disponibilidad antes de iniciar F5.'}
+];
+
+const ROADMAP_LINKS=[
+  {id:'D1L',kind:'dep',from:'P1',to:'P2',label:'D1',bus:0},
+  {id:'D2L',kind:'dep',from:'P2',to:'P3',label:'D2',bus:1},
+  {id:'D3L',kind:'dep',from:'P3',to:'P4',label:'D3',bus:2},
+  {id:'D4L',kind:'dep',from:'P4',to:'P5',label:'D4',bus:3},
+  {id:'D5L',kind:'dep',from:'P2',to:'P5',label:'D5',bus:4},
+  {id:'G1L',kind:'gate',from:'G1',to:'F2',label:'G1'},
+  {id:'G2L',kind:'gate',from:'G2',to:'F3',label:'G2'},
+  {id:'G3L',kind:'gate',from:'G3',to:'F4',label:'G3'},
+  {id:'G4L',kind:'gate',from:'G4',to:'F5',label:'G4'},
+  {id:'R1L',kind:'risk',from:'R1',to:'G1',label:'R1'},
+  {id:'R2L',kind:'risk',from:'R2',to:'P2',label:'R2'},
+  {id:'R3L',kind:'risk',from:'R3',to:'P4',label:'R3'},
+  {id:'R4L',kind:'risk',from:'R4',to:'G5',label:'R4'},
+  {id:'R5L',kind:'risk',from:'R5',to:'P4',label:'R5'},
+  {id:'R6L',kind:'risk',from:'R6',to:'P5',label:'R6'},
+  {id:'IM1L',kind:'imp',from:'IM1',to:'G2',label:'IM1'},
+  {id:'IM2L',kind:'imp',from:'IM2',to:'G5',label:'IM2'}
+];
+function getRoadItem(id){return ROADMAP_ITEMS.find(function(x){return x.id===id;}) || ROADMAP_ITEMS[0];}
+function openArchTab(tab){activeTab=tab||'matrix';showSection('arch');renderArch();}
+function selectRoadmapItem(id){roadmapSelected=id;renderRoadmap();}
+function roadX(m){return Math.max(0,Math.min(100,(m/8)*100));}
+function roadW(a,b){return Math.max(((b-a)/8)*100,4.2);}
+function projectSegStyle(seg, item){
+  var span=Math.max((item.end||8)-(item.start||0),.1);
+  var sx=((seg.start-(item.start||0))/span)*100;
+  var sw=((seg.end-seg.start)/span)*100;
+  return {'--sx':Math.max(0,Math.min(100,sx))+'%','--sw':Math.max(3,Math.min(100,sw))+'%'};
+}
+function openProjectSegment(ev, code){
+  if(ev){ev.preventDefault();ev.stopPropagation();}
+  openMatrixCell(code.toLowerCase());
+}
+function openRoadmapAction(item){
+  if(!item) return;
+  if(item.archKey){openMatrixCell(item.archKey);return;}
+  if(item.gate){openGate=GATES[item.gate];renderGateModal();return;}
+  if(item.archTab){openArchTab(item.archTab);return;}
+}
+function renderRelationBlock(item){
+  var rows=[];
+  function row(label,arr){
+    if(!arr || !arr.length) return;
+    rows.push(h('div',{className:'rm-rel-line'},[
+      h('div',{className:'rm-rel-label'},label),
+      h('div',{className:'rm-rel-tags'},arr.map(function(x){return h('span',{className:'rm-rel-tag'},x);} ))
+    ]));
+  }
+  row('Habilita',item.enables || item.enabledBy && []);
+  row('Depende de',item.dependsOn);
+  row('Habilitado por',item.enabledBy);
+  row('Fases del proyecto', item.phaseTrail ? item.phaseTrail : (item.phases ? item.phases.map(function(p){return p.code;}) : item.phaseTags));
+  row('Altera / afecta',item.affects);
+  if(item.mitigation){
+    rows.push(h('div',{className:'rm-rel-line'},[
+      h('div',{className:'rm-rel-label'},'Respuesta sugerida'),
+      h('div',{className:'rm-detail-text',style:{marginBottom:'0'}},item.mitigation)
+    ]));
+  }
+  return rows.length ? h('div',{className:'rm-rel-block'},rows) : null;
+}
+
+function roadLinkColor(kind){
+  if(kind==='risk') return '#C27A0A';
+  if(kind==='gate') return '#111827';
+  if(kind==='imp') return '#0E7490';
+  return '#D71920';
+}
+function renderRoadmapLinks(){
+  var timeline=document.querySelector('#roadmap-inner .rm-timeline-card');
+  if(!timeline) return;
+  Array.prototype.slice.call(timeline.querySelectorAll('.rm-link-svg')).forEach(function(x){x.remove();});
+  Array.prototype.slice.call(timeline.querySelectorAll('.link-focus')).forEach(function(x){x.classList.remove('link-focus');});
+  var rect=timeline.getBoundingClientRect();
+  if(!rect.width || !rect.height) return;
+  var ns='http://www.w3.org/2000/svg';
+
+  var pathSvg=document.createElementNS(ns,'svg');
+  pathSvg.setAttribute('class','rm-link-svg paths');
+  pathSvg.setAttribute('viewBox','0 0 '+rect.width+' '+rect.height);
+  pathSvg.setAttribute('preserveAspectRatio','none');
+
+  var labelSvg=document.createElementNS(ns,'svg');
+  labelSvg.setAttribute('class','rm-link-svg labels');
+  labelSvg.setAttribute('viewBox','0 0 '+rect.width+' '+rect.height);
+  labelSvg.setAttribute('preserveAspectRatio','none');
+
+  var defs=document.createElementNS(ns,'defs');
+  ['dep','risk','gate','imp'].forEach(function(kind){
+    var marker=document.createElementNS(ns,'marker');
+    marker.setAttribute('id','rm-arrow-'+kind);
+    marker.setAttribute('markerWidth','11');
+    marker.setAttribute('markerHeight','11');
+    marker.setAttribute('refX','9');
+    marker.setAttribute('refY','4');
+    marker.setAttribute('orient','auto');
+    marker.setAttribute('markerUnits','strokeWidth');
+    var p=document.createElementNS(ns,'path');
+    p.setAttribute('d','M0,0 L0,8 L9,4 z');
+    p.setAttribute('fill',roadLinkColor(kind));
+    marker.appendChild(p);
+    defs.appendChild(marker);
+  });
+  pathSvg.appendChild(defs);
+
+  function node(id){return timeline.querySelector('[data-road-id="'+id+'"]');}
+  function rectOf(el){ return el.getBoundingClientRect(); }
+  function edgePt(el,side,gap){
+    var r=rectOf(el);
+    gap=gap||0;
+    var x=r.left-rect.left+r.width/2;
+    var y=r.top-rect.top+r.height/2;
+    if(side==='right'){ x=r.right-rect.left+gap; }
+    if(side==='left'){ x=r.left-rect.left-gap; }
+    if(side==='top'){ y=r.top-rect.top-gap; }
+    if(side==='bottom'){ y=r.bottom-rect.top+gap; }
+    return {x:x,y:y};
+  }
+  function addText(txt,kind,x,y,cls){
+    if(!txt) return;
+    var t=document.createElementNS(ns,'text');
+    t.setAttribute('class',cls || ('rm-link-label '+kind));
+    t.setAttribute('x',x);
+    t.setAttribute('y',y);
+    t.textContent=txt;
+    labelSvg.appendChild(t);
+  }
+  function addPath(d,kind,focus){
+    var p=document.createElementNS(ns,'path');
+    p.setAttribute('class','rm-link-path '+kind);
+    p.setAttribute('d',d);
+    p.setAttribute('marker-end','url(#rm-arrow-'+kind+')');
+    if(focus){p.style.opacity='1';p.style.strokeWidth='2.8';}
+    pathSvg.appendChild(p);
+  }
+
+  ROADMAP_LINKS.forEach(function(link){
+    var aEl=node(link.from), bEl=node(link.to);
+    if(!aEl || !bEl) return;
+
+    var connected=[link.from,link.to].filter(Boolean);
+    var isFocus=connected.indexOf(roadmapSelected)>=0 || (link.label && String(roadmapSelected).indexOf(link.label)===0);
+
+    if(link.kind==='risk' || link.kind==='imp'){
+      if(!isFocus) return; // evita ruido visual: riesgos e impedimentos se muestran al seleccionar elemento relacionado
+    }
+
+    connected.forEach(function(id){
+      var el=node(id);
+      if(el && isFocus) el.classList.add('link-focus');
+    });
+
+    var aRect=rectOf(aEl), bRect=rectOf(bEl);
+
+    if(link.kind==='dep'){
+      // Dependencias como rutas ortogonales limpias, sin fila propia.
+      var a=edgePt(aEl,'bottom',4);
+      var b=edgePt(bEl,'top',14);
+      var track=aEl.parentElement.getBoundingClientRect();
+      var trackBottom=track.bottom-rect.top;
+      var busStep=9;
+      var busY=trackBottom-44+(Number(link.bus||0)*busStep);
+      busY=Math.min(trackBottom-8, Math.max(busY, Math.max(a.y,b.y)+10));
+      var d='M '+a.x+' '+a.y+' L '+a.x+' '+busY+' L '+b.x+' '+busY+' L '+b.x+' '+b.y;
+      addPath(d,'dep',isFocus);
+      addText(link.label,'dep',Math.min(a.x,b.x)+Math.abs(b.x-a.x)/2-8,busY-5,'rm-dep-badge');
+      return;
+    }
+
+    if(link.kind==='gate'){
+      var ag=edgePt(aEl,'right',4);
+      var bg=edgePt(bEl,'left',16);
+      var midX=(ag.x+bg.x)/2;
+      var dGate='M '+ag.x+' '+ag.y+' C '+(midX-10)+' '+ag.y+', '+(midX+10)+' '+bg.y+', '+bg.x+' '+bg.y;
+      addPath(dGate,'gate',isFocus);
+      addText(link.label,'gate',(ag.x+bg.x)/2,(ag.y+bg.y)/2-6);
+      return;
+    }
+
+    // Riesgos/impedimentos seleccionados: ruta ortogonal de baja complejidad.
+    var from=edgePt(aEl,'top',4);
+    var to=edgePt(bEl,'bottom',16);
+    var lift=18 + (Number(link.bus||0)*4);
+    var anchorY=to.y + lift;
+    var dOther='M '+from.x+' '+from.y+' L '+from.x+' '+anchorY+' L '+to.x+' '+anchorY+' L '+to.x+' '+to.y;
+    addPath(dOther,link.kind,true);
+    addText(link.label,link.kind,(from.x+to.x)/2,anchorY-5);
+  });
+
+  timeline.appendChild(pathSvg);
+  timeline.appendChild(labelSvg);
+}
+
+function renderRoadmap(){
+  var wrap=document.getElementById('roadmap-inner');
+  if(!wrap) return;
+  wrap.innerHTML='';
+  var selected=getRoadItem(roadmapSelected);
+  wrap.appendChild(h('div',{className:'roadmap-header'},[
+    h('div',{className:'roadmap-kicker'},'Crepes & Waffles · Escalabilidad organizacional'),
+    h('h1',{},'Roadmap del Programa CRE'),
+    h('p',{},'Planeación por niveles conectada con la arquitectura y alineada al horizonte de 8 meses del business case. La primera fila del mapa muestra los beneficios y la segunda las fases del programa; la escala superior queda reservada solo para el marco temporal.'),
+    h('div',{className:'rm-head-actions'},[
+      h('button',{className:'rm-action-chip',onclick:function(){openArchTab('matrix');}},'Abrir matriz F×P'),
+      h('button',{className:'rm-action-chip',onclick:function(){openArchTab('deps');}},'Ver dependencias'),
+      h('button',{className:'rm-action-chip',onclick:function(){openArchTab('benefits');}},'Ver beneficios'),
+      h('button',{className:'rm-action-chip',onclick:function(){openArchTab('transversal');}},'Ver capa transversal')
+    ])
+  ]));
+  var body=h('div',{className:'rm-body'});
+  wrap.appendChild(body);
+  body.appendChild(h('div',{className:'rm-overview'},[
+    h('div',{className:'rm-card'},h('div',{className:'rm-card-pad'},[
+      h('div',{className:'rm-title'},'Entrada ejecutiva para planeación por niveles'),
+      h('div',{className:'rm-sub'},'Las dependencias se leen como líneas ortogonales entre componentes, sin una fila propia. Los componentes vuelven a una lectura simple y cada uno muestra su fase principal más un rastro compacto F1→F5 para mantener el vínculo con la arquitectura.'),
+      h('div',{className:'rm-mini-grid'},[
+        h('div',{className:'rm-mini'},[h('div',{className:'rm-mini-num'},'8M'),h('div',{className:'rm-mini-lbl'},'Horizonte del business case')]),
+        h('div',{className:'rm-mini'},[h('div',{className:'rm-mini-num'},'5'),h('div',{className:'rm-mini-lbl'},'Beneficios en primera fila')]),
+        h('div',{className:'rm-mini'},[h('div',{className:'rm-mini-num'},'↗'),h('div',{className:'rm-mini-lbl'},'Relaciones visibles')])
+      ])
+    ]))
+  ]));
+  var main=h('div',{className:'rm-main-grid'});
+  body.appendChild(main);
+  var timeline=h('div',{className:'rm-timeline-card'});
+  timeline.appendChild(h('div',{className:'rm-timeline-top'},[
+    h('div',{className:'rm-time-label'},'Nivel / detalle'),
+    h('div',{className:'rm-month-row'},ROADMAP_MONTHS.map(function(q){return h('div',{className:'rm-month-block'},[h('strong',{},q.q),h('span',{},q.m)]);} ))
+  ]));
+  ROADMAP_LANES.forEach(function(lane){
+    var laneItems=ROADMAP_ITEMS.filter(function(i){return i.lane===lane.id;});
+    var track=h('div',{className:'rm-track',style:{'--lane-h':lane.h+'px','--lane-h-mobile':Math.max(88,lane.h+28)+'px'}});
+    if(!laneItems.length){
+      track.appendChild(h('div',{className:'rm-empty-note'},'Sin incidencias registradas por ahora'));
+    }
+    laneItems.forEach(function(item){
+      var x=roadX(item.start);
+      var w=roadW(item.start,item.end);
+      var style={'--x':x+'%','--w':w+'%','--y':(item.y||8)+'px'};
+      if(item.color){style.background=item.color;style.borderColor=item.color;}
+      var classes='rm-item '+item.type+(roadmapSelected===item.id?' selected':'');
+      var node;
+      if(item.type==='hito'){
+        style['--x']=roadX(item.start)+'%';
+        style['--w']='34px';
+        node=h('button',{className:classes,style:style,title:item.detail,'data-road-id':item.id,onclick:function(){selectRoadmapItem(item.id);}},[h('span',{className:'rm-diamond'}),h('span',{},item.label)]);
+      }else if(item.type==='proyecto'){
+        node=h('button',{className:classes,style:style,title:item.detail,'data-road-id':item.id,onclick:function(){selectRoadmapItem(item.id);}},[
+          h('div',{className:'rm-project-head'},[
+            h('span',{className:'rm-project-main'},item.label),
+            h('span',{className:'rm-project-phase-chip'},item.mainPhase || 'F?')
+          ]),
+          h('div',{className:'rm-project-trail'},(item.phaseTrail||[]).map(function(phase){
+            return h('span',{className:'rm-project-step'+((item.mainPhase===phase)?' active':''),'data-phase':phase,title:'Fase del proyecto: '+phase});
+          }))
+        ]);
+      }else{
+        node=h('button',{className:classes,style:style,title:item.detail,'data-road-id':item.id,onclick:function(){selectRoadmapItem(item.id);}},[h('span',{},item.label)]);
+      }
+      track.appendChild(node);
+    });
+    timeline.appendChild(h('div',{className:'rm-lane'},[
+      h('div',{className:'rm-lane-label'},[h('div',{className:'rm-lane-code'},lane.code),h('div',{className:'rm-lane-name'},lane.name),h('div',{className:'rm-lane-note'},lane.note)]),
+      track
+    ]));
+  });
+  main.appendChild(timeline);
+  var side=h('div',{className:'rm-legend-panel'});
+  main.appendChild(side);
+  side.appendChild(h('div',{className:'rm-side-card'},[
+    h('div',{className:'rm-side-title'},'Convenciones'),
+    h('div',{className:'rm-legend-row'},[h('div',{className:'rm-symbol'},h('span',{className:'rm-sym-benefit'})),h('div',{},'Beneficio')]),
+    h('div',{className:'rm-legend-row'},[h('div',{className:'rm-symbol'},h('span',{className:'rm-sym-phase'})),h('div',{},'Fase del programa')]),
+    h('div',{className:'rm-legend-row'},[h('div',{className:'rm-symbol'},h('span',{className:'rm-sym-diamond'})),h('div',{},'Hito / gate')]),
+    h('div',{className:'rm-legend-row'},[h('div',{className:'rm-symbol'},h('span',{className:'rm-sym-project'})),h('div',{},'Componente / proyecto con fase principal y rastro F1→F5')]),
+    h('div',{className:'rm-legend-row'},[h('div',{className:'rm-symbol'},h('div',{className:'rm-sym-dep'},h('i',{}))),h('div',{},'Dependencia entre componentes')]),
+    h('div',{className:'rm-legend-row'},[h('div',{className:'rm-symbol'},h('span',{className:'rm-sym-riskbox'})),h('div',{},'Riesgo crítico')]),
+    h('div',{className:'rm-legend-row'},[h('div',{className:'rm-symbol'},h('span',{className:'rm-sym-riskline'})),h('div',{},'Afectación de riesgo')]),
+    h('div',{className:'rm-legend-row'},[h('div',{className:'rm-symbol'},h('span',{className:'rm-sym-imp'})),h('div',{},'Impedimento')]),
+    h('div',{className:'rm-legend-row'},[h('div',{className:'rm-symbol'},h('span',{className:'rm-sym-pill'},'S1')),h('div',{},'Supuesto')]),
+    h('div',{className:'rm-legend-row'},[h('div',{className:'rm-symbol'},h('span',{className:'rm-sym-issue'},'Sin registro')),h('div',{},'Incidencia (cuando exista)')])
+  ]));
+  side.appendChild(h('div',{className:'rm-side-card'},[
+    h('div',{className:'rm-side-title'},'Detalle conectado'),
+    h('div',{className:'rm-detail-kicker'},selected.lane+' · '+selected.type),
+    h('div',{className:'rm-detail-title'},selected.label),
+    h('div',{className:'rm-detail-text'},selected.detail),
+    renderRelationBlock(selected),
+    h('div',{className:'rm-detail-meta'},selected.archKey ? ('Conecta con arquitectura: '+selected.archKey.toLowerCase()) : selected.gate ? ('Conecta con gate: '+selected.gate) : selected.archTab ? ('Conecta con pestaña: '+selected.archTab) : 'Elemento de control del roadmap.'),
+    h('div',{className:'rm-detail-actions'},[
+      (selected.archKey||selected.gate||selected.archTab) ? h('button',{className:'rm-detail-btn',onclick:function(){openRoadmapAction(selected);}}, selected.archKey ? 'Abrir ficha' : selected.gate ? 'Abrir gate' : 'Abrir pestaña') : null,
+      h('button',{className:'rm-detail-btn secondary',onclick:function(){openArchTab('deps');}},'Dependencias')
+    ])
+  ]));
+  side.appendChild(h('div',{className:'rm-read-box'},[
+    h('strong',{},'Lectura recomendada: '),
+    'primero revisa los cinco beneficios esperados y luego baja a las fases del programa. Después valida los gates, porque cada hito habilita la fase siguiente. Finalmente, usa los riesgos e impedimentos para leer afectaciones puntuales sin saturar la vista general.'
+  ]));
+  setTimeout(renderRoadmapLinks,0);
+}
+
+
+function bindDependencyLinks(){
+  document.removeEventListener('click', window.__depDelegatedClick || function(){});
+  window.__depDelegatedClick = function(ev){
+    var el = ev.target && ev.target.closest ? ev.target.closest('[data-dep-key]') : null;
+    if(!el) return;
+    var key = el.getAttribute('data-dep-key');
+    if(!key) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    openMatrixCell(key);
+  };
+  document.addEventListener('click', window.__depDelegatedClick);
+}
+bindDependencyLinks();
+window.addEventListener('resize', function(){ if(document.getElementById('roadmap-section') && document.getElementById('roadmap-section').style.display==='block') renderRoadmapLinks(); });
 
 function showSection(s) {
   document.getElementById('bc-section').style.display  = s==='bc'  ? 'flex'  : 'none';
   document.getElementById('arch-section').style.display = s==='arch' ? 'block' : 'none';
-  document.querySelectorAll('.nav-tab').forEach(function(t,i){
-    t.classList.toggle('active',(s==='bc'&&i===0)||(s==='arch'&&i===1));
-  });
+  document.getElementById('roadmap-section').style.display = s==='roadmap' ? 'block' : 'none';
+  document.getElementById('tab-bc').classList.toggle('active',s==='bc');
+  document.getElementById('tab-arch').classList.toggle('active',s==='arch');
+  document.getElementById('tab-roadmap').classList.toggle('active',s==='roadmap');
+  if(s==='arch') renderArch();
+  if(s==='roadmap') renderRoadmap();
   window.scrollTo(0,0);
 }
 
